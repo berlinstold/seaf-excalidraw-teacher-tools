@@ -9,6 +9,7 @@ Einsatz als digitale Tafel im Unterricht:
 
 Zwei zusätzliche Buttons in der oberen Excalidraw-Leiste öffnen die Funktionen.
 
+<p><img src="docs/images/screenshot.png" alt="Screenshot" height="500"></p>
 <p>
   <img src="docs/images/toolbar.png" alt="Präsentations- und Timer-Button in der Excalidraw-Leiste" height="48">
 </p>
