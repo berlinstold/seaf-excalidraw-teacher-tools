@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.1.0
+
+- Timer bleibt in der Lernendenansicht sichtbar, wenn er in der Lehrendenansicht geschlossen wird; ein- und ausblenden über den Schalter im Präsentationspanel oder das neue Augen-Symbol im Timer
+- Restzeit wird bei geschlossenem Timer klein neben dem Timer-Symbol in der Leiste angezeigt
+- Neu: optionaler Titel über der Zeit (Vorlagen „Eigenarbeit/Partnerarbeit/Gruppenarbeit endet in“ oder eigener Text), auch in der Lernendenansicht
+- Behoben: Timer sprang in der Lernendenansicht nach Schließen und erneutem Öffnen an eine falsche Position
+- Hinweis der Lernendenansicht sitzt jetzt oben links auf der Tafel statt unten links bei den Zoom-Buttons; Bedienelemente werden in der Lernendenansicht vollständiger ausgeblendet
+
 ## 2.0.0
 
 - Neu: Präsentationsmodus mit getrennter **Lehrendenansicht** und **Lernendenansicht** in zwei Tabs desselben Whiteboards

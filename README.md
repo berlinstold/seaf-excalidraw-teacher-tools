@@ -17,6 +17,10 @@ Zwei zusätzliche Buttons in der oberen Excalidraw-Leiste öffnen die Funktionen
   <img src="docs/images/overlay-dark.png" alt="Timer-Overlay, dunkel" width="320">
   <img src="docs/images/overlay-compact.png" alt="Timer-Overlay, kompakt" width="158">
 </p>
+<p>
+  <img src="docs/images/overlay-title-edit.png" alt="Timer mit Titel-Auswahl" width="320">
+  <img src="docs/images/overlay-lernende.png" alt="Timer mit Titel in der Lernendenansicht" width="200">
+</p>
 
 Die Installationsanleitung ist auf **Unraid + Seafile-Docker-Container + SeaDoc per Compose Manager Plus**
 zugeschnitten, funktioniert aber mit jedem Docker-Setup auf Basis von `seafileltd/seafile-mc`.
@@ -53,6 +57,8 @@ script is injected into Seahub via `sub_filter` in the nginx inside the Seafile 
 - **Alarm** bei Ablauf: Signalton (abschaltbar über das Lautsprecher-Symbol) und rot blinkendes Panel; Klick aufs Panel bestätigt
 - **4 Schriftgrößen** (Schriftgrößen-Symbol), z. B. groß für Präsentationen am Beamer
 - **Kompaktmodus** (Verkleinern-Symbol): nur Zeit und Start/Pause
+- **Titel** (Etikett-Symbol): optionaler Text über der Zeit, z. B. „Partnerarbeit endet in“. Vorlagen für Eigen-, Partner- und Gruppenarbeit oder eigener Text
+- **Restzeit in der Leiste**: Ist das Overlay geschlossen, steht die Restzeit klein neben dem Timer-Symbol (pausiert abgeschwächt, abgelaufen rot)
 - **Hell/Dunkel** folgt automatisch dem Excalidraw-Theme
 - **Tastenkürzel** `Alt + Shift + T` öffnet bzw. schließt das Overlay
 - Laufende Timer bleiben bei einem Neuladen der Seite erhalten
@@ -79,7 +85,7 @@ den Inhalt wie gewohnt. Das Plugin steuert, *was* die Lernenden sehen und *wann*
 2. **„Lehrendenansicht“** wählen.
 3. Dasselbe Whiteboard in einem **neuen Fenster** öffnen (z. B. Adresse kopieren, Strg+N, einfügen), das Fenster
    auf den Beamer ziehen, wieder auf das Präsentations-Symbol klicken und **„Lernendenansicht“** wählen.
-4. In der Lernendenansicht unten links auf den Hinweis klicken und **„Vollbild (nur Tafel)“** wählen.
+4. In der Lernendenansicht oben links auf den Hinweis klicken und **„Vollbild (nur Tafel)“** wählen.
    Dann sind Seafile-Kopfzeile und Browserleisten verschwunden.
 
 Die Rolle merkt sich jeder Tab, auch nach einem Neuladen. Im Steuerpanel siehst du, ob eine Lernendenansicht
@@ -95,14 +101,14 @@ verbunden ist.
 | **Ansicht spiegeln** | Verschieben und Zoomen werden live übertragen. Die Lernendenansicht zeigt immer mindestens deinen ganzen Ausschnitt, umgerechnet auf ihr Bildformat. | Alt+Shift+M |
 | **Ausschnitt einmal übertragen** | Überträgt den aktuellen Ausschnitt einmalig, wenn das Spiegeln aus ist. | |
 | **Sanft aufdecken** | Blendet den neuen Stand weich ein statt hart umzuschalten. | |
-| **Timer für Lernende anzeigen** | Der Timer erscheint groß in der Lernendenansicht, nur als Anzeige. Bedient wird er in der Lehrendenansicht, seine Position wird relativ übernommen. | |
+| **Timer für Lernende anzeigen** | Der Timer erscheint in der Lernendenansicht, nur als Anzeige, mit Titel. Er schaltet sich beim Öffnen des Timers automatisch ein und bleibt sichtbar, auch wenn du den Timer bei dir schließt; die Restzeit siehst du dann neben dem Timer-Symbol in der Leiste. Ausblenden über diesen Schalter oder das Augen-Symbol im Timer. Die Position wird relativ übernommen. | |
 | Panel öffnen/schließen | | Alt+Shift+P |
 
 ### Lernendenansicht
 
 - Reine Anzeige: Excalidraw läuft im Ansichtsmodus, die Bedienelemente sind ausgeblendet. Ein versehentlicher
   Klick am Beamer verändert nichts.
-- Unten links zeigt ein dezenter Hinweis den Zustand („verbunden“, „eingefroren“, „Lehrendenansicht nicht verbunden“).
+- Oben links zeigt ein dezenter Hinweis den Zustand („verbunden“, „eingefroren“, „Lehrendenansicht nicht verbunden“).
   Ein Klick darauf öffnet ein Menü mit Vollbild, Bedienelementen, Ausblenden des Hinweises und „Rolle beenden“.
 - Wird die Lernendenansicht während des Einfrierens neu geladen, zeigt sie eine leere Fläche („Tafel pausiert“)
   statt des verborgenen Stands.
@@ -325,6 +331,8 @@ sich deshalb auch, um das Plugin zuerst auszuprobieren.
 | Panel ziehen (beliebige freie Stelle) | Overlay verschieben |
 | **Countdown / Stoppuhr** | Modus wechseln (ein laufender Timer wird dabei pausiert) |
 | Zeitanzeige anklicken | Zeit eingeben (nur im pausierten Countdown) |
+| Etikett-Symbol | Titel-Zeile ein-/ausblenden: Vorlage wählen oder eigenen Text eintippen, X entfernt den Titel |
+| Augen-Symbol (nur Lehrendenansicht) | Timer für Lernende ein- bzw. ausblenden |
 | 1′ … 45′ | Schnellwahl der Countdown-Dauer |
 | **Start / Pause / Weiter** | Timer steuern |
 | **Reset** | Auf die eingestellte Dauer bzw. 00:00 zurücksetzen |
@@ -350,7 +358,7 @@ nach einer Nutzerinteraktion auf der Seite.
 
 **Präsentation: „Keine Lernendenansicht verbunden“**
 - Beide Tabs müssen dasselbe Whiteboard im selben Browser und Browserprofil zeigen. Ein privates Fenster zählt als anderes Profil.
-- In der Lernendenansicht muss die Rolle „Lernendenansicht“ gewählt sein (Hinweis unten links).
+- In der Lernendenansicht muss die Rolle „Lernendenansicht“ gewählt sein (Hinweis oben links).
 - Beide Tabs einmal neu laden. Die Rollen bleiben erhalten.
 
 **Präsentation: „Ansicht spiegeln“ ist ausgegraut**

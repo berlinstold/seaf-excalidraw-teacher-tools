@@ -3,7 +3,7 @@
 // @namespace    https://github.com/berlinstold/seaf-excalidraw-teacher-tools
 // @homepageURL  https://github.com/berlinstold/seaf-excalidraw-teacher-tools
 // @license      MIT
-// @version      2.0.0
+// @version      2.1.0
 // @description  Timer-Overlay und Präsentationsmodus (Lehrenden-/Lernendenansicht) für Excalidraw-Whiteboards in Seafile
 // @match        https://seafile.example.com/*
 // @grant        none
@@ -165,6 +165,11 @@
     '<path d="M14 20l-2-1l-2 1"/><path d="M12 22v-6.5l-3-1.72"/><path d="M6.072 17.732l-.134-2.232l-1.866-1.232"/>' +
     '<path d="M3.34 17l5.629-3.25l-.01-3.458"/><path d="M4.072 9.732l1.866-1.232l.134-2.232"/><path d="M3.34 7l5.629 3.25l2.99-1.738"/>');
   var ICON_EYE = svgIcon('<path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0-4 0"/><path d="M21 12c-2.4 4-5.4 6-9 6c-3.6 0-6.6-2-9-6c2.4-4 5.4-6 9-6c3.6 0 6.6 2 9 6"/>');
+  var ICON_EYE_OFF = svgIcon('<path d="M10.585 10.587a2 2 0 0 0 2.829 2.828"/>' +
+    '<path d="M16.681 16.673a8.717 8.717 0 0 1-4.681 1.327c-3.6 0-6.6-2-9-6c1.272-2.12 2.712-3.678 4.32-4.674m2.86-1.146a9.055 9.055 0 0 1 1.82-.18c3.6 0 6.6 2 9 6c-.666 1.11-1.379 2.067-2.138 2.87"/>' +
+    '<path d="M3 3l18 18"/>');
+  var ICON_TAG = svgIcon('<path d="M7.5 7.5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0-2 0"/>' +
+    '<path d="M3 6v5.172a2 2 0 0 0 .586 1.414l7.71 7.71a2.41 2.41 0 0 0 3.408 0l5.592-5.592a2.41 2.41 0 0 0 0-3.408l-7.71-7.71a2 2 0 0 0-1.414-.586h-5.172a3 3 0 0 0-3 3z"/>');
   var ICON_SEND = svgIcon('<path d="M10 14l11-11"/><path d="M21 3l-6.5 18a.55 .55 0 0 1-1 0l-3.5-7l-7-3.5a.55 .55 0 0 1 0-1l18-6.5"/>');
 
   // Toolbar-Icons (Linienstärke wird zur Laufzeit an die Original-Icons angeglichen)
@@ -339,8 +344,11 @@
     var defaults = {
       open: false, x: null, y: null, mode: 'countdown', duration: 300,
       remainingMs: 300000, endAt: null, elapsedMs: 0, startAt: null,
-      running: false, compact: false, size: 'm', sound: true
+      running: false, compact: false, size: 'm', sound: true,
+      title: '', titleEdit: false
     };
+    var TITLE_PRESETS = ['Eigenarbeit endet in', 'Partnerarbeit endet in', 'Gruppenarbeit endet in'];
+    var lastSize = { w: 240, h: 160 }; // zuletzt gemessene Panelgröße (auch wenn das Panel gerade geschlossen ist)
     var state = {};
     var alarmActive = false;
     var editing = false;
@@ -439,14 +447,17 @@
       if (remote) return;
       state.open = open;
       if (!open) alarmActive = false;
+      if (open) Pres.onTimerOpened();
       save(); render();
     }
 
     // --- Austausch mit der Lernendenansicht ------------------------------------
     function snapshot() {
-      var w = ui ? ui.panel.offsetWidth : 240;
-      var h = ui ? ui.panel.offsetHeight : 160;
+      // Gemerkte Größe verwenden: bei geschlossenem Panel liefert offsetWidth 0,
+      // was die relative Position verfälschen würde.
+      var w = lastSize.w, h = lastSize.h;
       return {
+        title: state.title || '',
         open: state.open, mode: state.mode, duration: state.duration, remainingMs: state.remainingMs,
         endAt: state.endAt, elapsedMs: state.elapsedMs, startAt: state.startAt, running: state.running,
         compact: state.compact, size: state.size, alarm: alarmActive,
@@ -457,7 +468,7 @@
 
     function applyRemote(t) {
       if (!remote || !t) return;
-      ['open', 'mode', 'duration', 'remainingMs', 'endAt', 'elapsedMs', 'startAt', 'running', 'compact', 'size'].forEach(function (k) {
+      ['open', 'mode', 'duration', 'remainingMs', 'endAt', 'elapsedMs', 'startAt', 'running', 'compact', 'size', 'title'].forEach(function (k) {
         if (k in t) state[k] = t[k];
       });
       alarmActive = !!t.alarm;
@@ -478,7 +489,19 @@
 
     // --- Overlay ---------------------------------------------------------------
     var CSS = BASE_CSS + '\n' + [
-      '.panel{min-width:236px}',
+      '.panel{min-width:236px;max-width:min(92vw,960px)}',
+      '.ttl{text-align:center;font-weight:600;color:var(--muted);font-size:max(12px,calc(var(--fs) * .3));line-height:1.2;margin-top:4px;overflow-wrap:anywhere}',
+      '.panel.remote .ttl{color:var(--fg);margin-top:0}',
+      '.titlerow{display:none;margin:4px 0 2px}',
+      '.panel.tedit .titlerow{display:block}',
+      '.tin-wrap{display:flex;gap:4px}',
+      '.tin{flex:1;min-width:0;width:100%;height:28px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--fg);font:inherit;font-size:12px;padding:0 8px;outline:none;user-select:text;-webkit-user-select:text}',
+      '.tin:focus{border-color:var(--primary)}',
+      '.tchips{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}',
+      '.panel.compact .titlerow{display:none}',
+      '.icon.on{color:var(--primary)}',
+      '.lernonly{display:none}',
+      '.panel.lehrende .lernonly{display:inline-flex}',
       '.tabs{display:flex;background:var(--track);border-radius:8px;padding:2px;gap:2px}',
       '.tab{border:0;background:transparent;color:var(--muted);font:inherit;font-size:12px;font-weight:600;padding:4px 8px;border-radius:6px;cursor:pointer}',
       '.tab.on{background:var(--bg);color:var(--fg);box-shadow:0 1px 2px rgba(0,0,0,.12)}',
@@ -528,11 +551,19 @@
         '    </div>' +
         '    <span class="spacer"></span>' +
         '    <button class="icon mini" data-act="toggle"></button>' +
+        '    <button class="icon" data-act="titleedit" title="Titel für den Timer">' + ICON_TAG + '</button>' +
+        '    <button class="icon lernonly" data-act="lern"></button>' +
         '    <button class="icon" data-act="size" title="Schriftgröße">' + ICON_TEXT_SIZE + '</button>' +
         '    <button class="icon" data-act="sound"></button>' +
         '    <button class="icon" data-act="compact"></button>' +
         '    <button class="icon" data-act="close" title="Schließen (Alt+Shift+T)">' + ICON_CLOSE + '</button>' +
         '  </div>' +
+        '  <div class="titlerow">' +
+        '    <div class="tin-wrap"><input class="tin" type="text" size="1" maxlength="80" placeholder="Titel für Lernende (optional)" autocomplete="off" spellcheck="false">' +
+        '      <button class="icon" data-act="ttlclear" title="Titel entfernen">' + ICON_CLOSE + '</button></div>' +
+        '    <div class="tchips">' + TITLE_PRESETS.map(function (t) { return '<button class="chip" data-act="ttlpreset" data-t="' + t + '">' + t.split(' ')[0] + '</button>'; }).join('') + '</div>' +
+        '  </div>' +
+        '  <div class="ttl" hidden></div>' +
         '  <div class="display" title="Klicken zum Bearbeiten (z. B. 5, 2:30, 1h 15m)">' +
         '    <span class="time">00:00</span>' +
         '    <input class="edit" type="text" size="1" inputmode="numeric" autocomplete="off" spellcheck="false" hidden>' +
@@ -563,8 +594,15 @@
         tabs: root.querySelectorAll('.tab'),
         chips: root.querySelectorAll('.chip'),
         sound: root.querySelector('[data-act=sound]'),
-        compact: root.querySelector('[data-act=compact]')
+        compact: root.querySelector('[data-act=compact]'),
+        lern: root.querySelector('[data-act=lern]'),
+        titleEdit: root.querySelector('[data-act=titleedit]'),
+        tin: root.querySelector('.tin'),
+        ttl: root.querySelector('.ttl'),
+        tchips: root.querySelectorAll('[data-act=ttlpreset]')
       };
+      ui.tin.addEventListener('input', function () { state.title = ui.tin.value.slice(0, 80); save(); render(); });
+      ui.tin.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === 'Escape') { e.preventDefault(); ui.tin.blur(); } });
       root.addEventListener('click', onClick);
       var posProxy = {
         get x() { return state.x; }, set x(v) { state.x = v; },
@@ -600,6 +638,10 @@
         case 'sound': state.sound = !state.sound; save(); render(); break;
         case 'compact': state.compact = !state.compact; save(); render(); break;
         case 'close': setOpen(false); break;
+        case 'titleedit': state.titleEdit = !state.titleEdit; save(); render(); if (state.titleEdit) ui.tin.focus(); break;
+        case 'ttlpreset': state.title = btn.getAttribute('data-t'); save(); render(); break;
+        case 'ttlclear': state.title = ''; save(); render(); break;
+        case 'lern': Pres.setLernTimer(!Pres.lernTimer()); break;
       }
     }
 
@@ -611,6 +653,7 @@
         state.y = remotePos.ry * Math.max(0, window.innerHeight - h);
       }
       placeHost(ui.host, ui.panel, state, function (w) { return { x: window.innerWidth - w - 24, y: 72 }; });
+      if (!remote && ui.panel.offsetWidth > 0) lastSize = { w: ui.panel.offsetWidth, h: ui.panel.offsetHeight };
     }
 
     function beginEdit() {
@@ -678,6 +721,24 @@
       setIcon(ui.sound, state.sound ? ICON_VOLUME : ICON_VOLUME_OFF, state.sound ? 'Ton aus' : 'Ton an');
       setIcon(ui.compact, state.compact ? ICON_MAXIMIZE : ICON_MINIMIZE, state.compact ? 'Erweiterte Ansicht' : 'Kompaktansicht');
       setIcon(ui.miniToggle, state.running ? ICON_PAUSE : ICON_PLAY, state.running ? 'Pause' : 'Start');
+
+      // Titel
+      var title = (state.title || '').trim();
+      ui.ttl.hidden = !title;
+      if (ui.ttl.textContent !== title) ui.ttl.textContent = title;
+      p.classList.toggle('tedit', !!state.titleEdit && !remote);
+      ui.titleEdit.classList.toggle('on', !!state.titleEdit || !!title);
+      if (ui.root.activeElement !== ui.tin && ui.tin.value !== (state.title || '')) ui.tin.value = state.title || '';
+      Array.prototype.forEach.call(ui.tchips, function (c) { c.classList.toggle('on', c.getAttribute('data-t') === state.title); });
+
+      // Anzeige für Lernende (nur in der Lehrendenansicht)
+      var isLehr = !remote && Pres.role() === 'lehrende';
+      p.classList.toggle('lehrende', isLehr);
+      if (isLehr) {
+        var lv = Pres.lernTimer();
+        setIcon(ui.lern, lv ? ICON_EYE : ICON_EYE_OFF, lv ? 'Für Lernende sichtbar – klicken zum Ausblenden' : 'Für Lernende ausgeblendet – klicken zum Einblenden');
+        ui.lern.classList.toggle('on', lv);
+      }
       place();
     }
 
@@ -692,6 +753,16 @@
       isOpen: function () { return !!state.open; },
       isBusy: function () { return !!state.running || alarmActive; },
       label: function () { return state.running ? fmt(currentMs(), state.mode === 'countdown') : ''; },
+      // Restzeit neben dem Leisten-Symbol, solange das Overlay geschlossen ist
+      closedLabel: function () {
+        if (remote || state.open) return null;
+        var ms = currentMs();
+        var cd = state.mode === 'countdown';
+        if (alarmActive) return { text: '00:00', cls: 'alarm' };
+        if (state.running) return { text: fmt(ms, cd), cls: '' };
+        var partial = cd ? (ms > 0 && ms < state.duration * 1000) : ms > 0;
+        return partial ? { text: fmt(ms, cd), cls: 'paused' } : null;
+      },
       onResize: function () { if (ui && state.open) { place(); save(); } }
     };
   })();
@@ -708,8 +779,10 @@
     if (role !== 'lehrende' && role !== 'lernende') role = null;
 
     // Einstellungen der Lehrendenansicht (pro Tab)
-    var cfg = Object.assign({ frozen: false, mirror: false, fade: true, syncTimer: true },
+    // lernTimer: Timer in der Lernendenansicht zeigen (unabhängig davon, ob er hier geöffnet ist)
+    var cfg = Object.assign({ frozen: false, mirror: false, fade: true, lernTimer: false },
                             jsonGet(sessionStorage, STATE_KEY) || {});
+    delete cfg.syncTimer;
     // Einstellungen der Lernendenansicht (pro Tab)
     var lern = Object.assign({ hideUi: true, badgeHidden: false }, jsonGet(sessionStorage, STATE_KEY + ':lern') || {});
 
@@ -776,8 +849,22 @@
       return {
         type: 'sync', frozen: cfg.frozen, mirror: cfg.mirror,
         view: cfg.mirror ? currentView() : null,
-        timer: cfg.syncTimer ? Timer.snapshot() : { open: false }
+        timer: timerForLern()
       };
+    }
+
+    function timerForLern() {
+      var t = Timer.snapshot();
+      t.open = !!cfg.lernTimer;
+      return t;
+    }
+
+    function setLernTimer(v) {
+      cfg.lernTimer = !!v;
+      saveCfg();
+      post({ type: 'timer', timer: timerForLern() });
+      renderAll();
+      Timer.render();
     }
 
     function onMessage(m) {
@@ -1063,7 +1150,7 @@
       '    <div class="sep"></div>' +
       '    <div class="row"><span class="lbl">Sanft aufdecken<span class="sub">Neuen Stand weich einblenden</span></span>' +
       '      <button class="switch" role="switch" data-act="fade" aria-label="Sanft aufdecken"></button></div>' +
-      '    <div class="row"><span class="lbl">Timer für Lernende anzeigen<span class="sub">Timer wird in der Lernendenansicht gezeigt</span></span>' +
+      '    <div class="row"><span class="lbl">Timer für Lernende anzeigen<span class="sub">Bleibt sichtbar, auch wenn der Timer hier geschlossen ist</span></span>' +
       '      <button class="switch" role="switch" data-act="synctimer" aria-label="Timer für Lernende anzeigen"></button></div>' +
       '    <div class="foot"><button class="link" data-act="role" data-role="">Rolle beenden</button>' +
       '      <span class="keys">Alt+Shift+F / M / P</span></div>' +
@@ -1098,10 +1185,7 @@
         case 'mirror': toggleMirror(); break;
         case 'sendview': lastSent.key = ''; sendView(true); break;
         case 'fade': cfg.fade = !cfg.fade; saveCfg(); renderAll(); break;
-        case 'synctimer':
-          cfg.syncTimer = !cfg.syncTimer; saveCfg();
-          post({ type: 'timer', timer: cfg.syncTimer ? Timer.snapshot() : { open: false } });
-          renderAll(); break;
+        case 'synctimer': setLernTimer(!cfg.lernTimer); break;
       }
     }
 
@@ -1135,14 +1219,14 @@
         r.querySelector('[data-act=sendview]').disabled = !hasApp || cfg.mirror;
         r.querySelector('[data-warn=api]').hidden = hasApp;
         r.querySelector('[data-act=fade]').setAttribute('aria-checked', String(cfg.fade));
-        r.querySelector('[data-act=synctimer]').setAttribute('aria-checked', String(cfg.syncTimer));
+        r.querySelector('[data-act=synctimer]').setAttribute('aria-checked', String(cfg.lernTimer));
       }
       placePanel();
     }
 
     // --- Hinweis der Lernendenansicht ------------------------------------------------
     var BADGE_CSS = BASE_CSS + '\n' + [
-      '.wrap{display:flex;flex-direction:column-reverse;align-items:flex-start;gap:6px;font-family:Assistant,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:13px}',
+      '.wrap{display:flex;flex-direction:column;align-items:flex-start;gap:6px;font-family:Assistant,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:13px}',
       '.pill{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:var(--bg);color:var(--fg);',
       '  font:600 12px Assistant,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;box-shadow:0 2px 10px rgba(0,0,0,.12);cursor:pointer;opacity:.25;transition:opacity .3s}',
       '.wrap:hover .pill,.wrap.open .pill,.wrap.attn .pill{opacity:1}',
@@ -1178,8 +1262,7 @@
       if (badge && badge.host.isConnected) return;
       var s = createShadowHost('sf-ex-pres-badge', BADGE_CSS, BADGE_HTML, 2147483002);
       s.host.style.left = '12px';
-      s.host.style.top = 'auto';
-      s.host.style.bottom = '12px';
+      s.host.style.top = '12px';
       badge = { host: s.host, root: s.root, wrap: s.root.querySelector('.wrap') };
       s.root.addEventListener('click', function (e) {
         var b = e.target.closest('[data-act]');
@@ -1202,6 +1285,11 @@
       if (!show) { if (badge) badge.host.style.display = 'none'; return; }
       ensureBadge();
       badge.host.style.display = '';
+      // oben links auf der Tafelfläche (nicht auf der Seafile-Kopfzeile);
+      // bei eingeblendeten Bedienelementen unter dem Excalidraw-Menü
+      var exr = getExcalidraw() ? getExcalidraw().getBoundingClientRect() : { left: 0, top: 0 };
+      badge.host.style.left = Math.round(Math.max(0, exr.left) + 12) + 'px';
+      badge.host.style.top = Math.round(Math.max(0, exr.top) + (lern.hideUi ? 12 : 64)) + 'px';
       var r = badge.root;
       var connected = teacherConnected();
       badge.wrap.classList.toggle('dark', isDark());
@@ -1225,7 +1313,10 @@
       var st = document.createElement('style');
       st.id = LERN_CSS_ID;
       // Fallback, falls der Ansichtsmodus nicht gesetzt werden kann: Excalidraw-Bedienelemente ausblenden
-      st.textContent = 'html.sf-ex-lernende-ui .excalidraw .layer-ui__wrapper{visibility:hidden!important}';
+      st.textContent = [
+        '.layer-ui__wrapper', '.layer-ui__wrapper__footer', '.App-bottom-bar', 'footer',
+        '.zoom-actions', '.undo-redo-buttons', '.disable-view-mode', '.main-menu-trigger'
+      ].map(function (sel) { return 'html.sf-ex-lernende-ui .excalidraw ' + sel; }).join(',') + '{visibility:hidden!important}';
       (document.head || document.documentElement).appendChild(st);
     }
 
@@ -1254,10 +1345,11 @@
       if (role === 'lernende' && lastView) applyView(lastView);
       if (role === 'lehrende' && cfg.mirror) { lastSent.key = ''; sendView(true); }
       placePanel();
+      renderBadge();
     }
 
     function onTimerChange() {
-      if (role === 'lehrende' && cfg.syncTimer) post({ type: 'timer', timer: Timer.snapshot() });
+      if (role === 'lehrende') post({ type: 'timer', timer: timerForLern() });
     }
 
     function init() {
@@ -1280,6 +1372,9 @@
       toggleFreeze: function () { if (role === 'lehrende') toggleFreeze(); },
       toggleMirror: function () { if (role === 'lehrende') toggleMirror(); },
       isPanelOpen: function () { return panelOpen; },
+      lernTimer: function () { return role === 'lehrende' && !!cfg.lernTimer; },
+      setLernTimer: function (v) { if (role === 'lehrende') setLernTimer(v); },
+      onTimerOpened: function () { if (role === 'lehrende' && !cfg.lernTimer) setLernTimer(true); },
       isFrozen: function () { return role === 'lehrende' && cfg.frozen; },
       isMirror: function () { return role === 'lehrende' && cfg.mirror; }
     };
@@ -1298,6 +1393,12 @@
       '.sf-ex-tbtn svg{width:var(--lg-icon-size,1rem);height:var(--lg-icon-size,1rem);pointer-events:none}',
       '.sf-ex-tbtn .sf-badge{position:absolute;top:4px;right:4px;width:7px;height:7px;border-radius:50%;background:#e03131;display:none}',
       '.sf-ex-tbtn.sf-running .sf-badge{display:block}',
+      '.sf-ex-tbtn .sf-tlabel{display:none;margin-left:5px;font:600 11px/1 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:.2px;pointer-events:none}',
+      '.sf-ex-tbtn.sf-has-label{width:auto!important;padding:0 8px 0 7px}',
+      '.sf-ex-tbtn.sf-has-label .sf-tlabel{display:inline}',
+      '.sf-ex-tbtn.sf-has-label .sf-badge{display:none!important}',
+      '.sf-ex-tbtn .sf-tlabel.paused{opacity:.55}',
+      '.sf-ex-tbtn .sf-tlabel.alarm{color:#e03131}',
       '.sf-ex-tbtn.sf-mirror .sf-badge{display:block;background:#2f9e44}',
       '.sf-ex-tbtn.sf-frozen .sf-badge{display:block;background:#e03131}',
       '.' + DIVIDER_CLASS + ':not(.App-toolbar__divider){width:1px;height:1.5rem;align-self:center;margin:0 .25rem;background:var(--default-border-color,#e0e0e0);flex:0 0 auto}',
@@ -1322,7 +1423,7 @@
       b.id = id;
       b.className = 'sf-ex-tbtn';
       b.setAttribute('aria-label', label);
-      b.innerHTML = icon + '<span class="sf-badge"></span>';
+      b.innerHTML = icon + '<span class="sf-badge"></span>' + (id === TIMER_BTN_ID ? '<span class="sf-tlabel"></span>' : '');
       b.addEventListener('pointerdown', function (e) { e.stopPropagation(); });
       b.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); onClick(); });
       return b;
@@ -1373,6 +1474,7 @@
       var r = ref.getBoundingClientRect();
       var cs = getComputedStyle(ref);
       btn.style.width = Math.round(r.width) + 'px';
+      btn.style.minWidth = Math.round(r.width) + 'px';
       btn.style.height = Math.round(r.height) + 'px';
       btn.style.borderRadius = cs.borderRadius;
       var refSvg = ref.querySelector('svg');
@@ -1425,6 +1527,14 @@
       if (tb) {
         tb.classList.toggle('sf-active', Timer.isOpen());
         tb.classList.toggle('sf-running', Timer.isBusy());
+        var cl = Timer.closedLabel();
+        var lab = tb.querySelector('.sf-tlabel');
+        tb.classList.toggle('sf-has-label', !!cl);
+        if (lab) {
+          var txt = cl ? cl.text : '';
+          if (lab.textContent !== txt) lab.textContent = txt;
+          lab.className = 'sf-tlabel' + (cl && cl.cls ? ' ' + cl.cls : '');
+        }
         var t = 'Timer (Alt+Shift+T)' + (Timer.label() ? ' – ' + Timer.label() : '');
         if (tb.title !== t) tb.title = t;
       }
