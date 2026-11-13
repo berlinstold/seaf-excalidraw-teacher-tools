@@ -1,0 +1,115 @@
+# Erstellt automatisch ein GitHub-Release, sobald auf "main" eine neue Version landet.
+#
+# Versionsquelle ist die Zeile "// @version x.y.z" in excalidraw-timer.js.
+# Gibt es dazu noch keinen Tag "vx.y.z", wird
+#   - geprüft, ob Skript und Installer syntaktisch in Ordnung sind,
+#   - der passende Abschnitt "## x.y.z" aus CHANGELOG.md als Release-Text verwendet,
+#   - das Paket seaf-excalidraw-teacher-tools.zip gebaut,
+#   - Tag und Release "vx.y.z" angelegt (Paket und JS-Datei als Download).
+# Ist die Version schon veröffentlicht, passiert nichts.
+
+name: Release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'excalidraw-timer.js'
+      - 'CHANGELOG.md'
+      - 'install.sh'
+      - '.github/workflows/release.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Version ermitteln
+        id: v
+        run: |
+          VERSION="$(grep -m1 '@version' excalidraw-timer.js | awk '{print $3}')"
+          if ! printf '%s' "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error file=excalidraw-timer.js::Ungültige Version '$VERSION' (erwartet: x.y.z)"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          if git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Version v$VERSION ist bereits veröffentlicht – nichts zu tun."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "Neue Version: v$VERSION"
+          fi
+
+      - name: Prüfen
+        if: steps.v.outputs.exists == 'false'
+        run: |
+          node --check excalidraw-timer.js
+          bash -n install.sh
+
+      - name: Release-Text aus CHANGELOG.md
+        if: steps.v.outputs.exists == 'false'
+        env:
+          VERSION: ${{ steps.v.outputs.version }}
+        run: |
+          awk -v h="## $VERSION" '
+            $0 == h || index($0, h " ") == 1 { f = 1; next }
+            /^## / { f = 0 }
+            f
+          ' CHANGELOG.md > notes.md
+          if ! grep -q '[^[:space:]]' notes.md; then
+            echo "::error file=CHANGELOG.md::Kein Abschnitt '## $VERSION' in CHANGELOG.md gefunden"
+            exit 1
+          fi
+          cat >> notes.md <<EOF
+
+          ---
+
+          **Installation / Update auf dem Server** (Anleitung: README, Abschnitt *Variante A*):
+
+          \`\`\`bash
+          cd /mnt/user/appdata
+          wget -O teacher-tools.zip https://github.com/${GITHUB_REPOSITORY}/releases/download/v${VERSION}/seaf-excalidraw-teacher-tools.zip
+          unzip -q -o teacher-tools.zip && rm teacher-tools.zip
+          cd seaf-excalidraw-teacher-tools && chmod +x install.sh && ./install.sh update <containername>
+          \`\`\`
+
+          Bei der Erstinstallation \`install\` statt \`update\` verwenden.
+          EOF
+          cat notes.md
+
+      - name: Paket bauen
+        if: steps.v.outputs.exists == 'false'
+        run: |
+          PKG=dist/seaf-excalidraw-teacher-tools
+          mkdir -p "$PKG"
+          cp -r excalidraw-timer.js install.sh nginx-snippet.conf README.md CHANGELOG.md LICENSE docs "$PKG"/
+          chmod +x "$PKG/install.sh"
+          (cd dist && zip -qr seaf-excalidraw-teacher-tools.zip seaf-excalidraw-teacher-tools)
+          cp excalidraw-timer.js dist/
+          ls -la dist
+
+      - name: Release anlegen
+        if: steps.v.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.v.outputs.version }}
+        run: |
+          gh release create "v$VERSION" \
+            dist/seaf-excalidraw-teacher-tools.zip \
+            dist/excalidraw-timer.js \
+            --target "$GITHUB_SHA" \
+            --title "v$VERSION" \
+            --notes-file notes.md \
+            --latest

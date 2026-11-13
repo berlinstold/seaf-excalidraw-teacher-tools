@@ -157,7 +157,8 @@ Es gibt drei Wege, das Skript einzubinden:
 | `excalidraw-timer.js` | Das eigentliche Plugin (gleichzeitig als Userscript nutzbar) |
 | `install.sh` | Automatische Installation, Aktualisierung und Deinstallation für Variante A |
 | `nginx-snippet.conf` | Die nginx-Ergänzungen zum manuellen Einfügen |
-| `CHANGELOG.md` | Änderungen je Version |
+| `CHANGELOG.md` | Änderungen je Version (Quelle für die Release-Texte) |
+| `.github/workflows/release.yml` | Erstellt automatisch Releases |
 | `docs/images/` | Screenshots für diese Anleitung |
 
 ---
@@ -171,27 +172,17 @@ Je nach Image-Version liegt die Konfiguration im Datenvolume (`/shared/nginx/con
 
 ### 1. Dateien auf den Unraid-Server holen
 
-Im Unraid-WebUI oben rechts das **Terminal** (`>_`) öffnen und das Repository als ZIP herunterladen.
-Unraid bringt `git` nicht von Haus aus mit, `wget` und `unzip` schon.
+Im Unraid-WebUI oben rechts das **Terminal** (`>_`) öffnen und das Paket des **neuesten Releases** herunterladen:
 
 ```bash
 cd /mnt/user/appdata
-wget -O teacher-tools.zip https://github.com/berlinstold/seaf-excalidraw-teacher-tools/archive/refs/heads/main.zip
+wget -O teacher-tools.zip https://github.com/berlinstold/seaf-excalidraw-teacher-tools/releases/latest/download/seaf-excalidraw-teacher-tools.zip
 unzip -q -o teacher-tools.zip && rm teacher-tools.zip
-mkdir -p seaf-excalidraw-teacher-tools
-cp -r seaf-excalidraw-teacher-tools-main/. seaf-excalidraw-teacher-tools/ && rm -rf seaf-excalidraw-teacher-tools-main
 chmod +x seaf-excalidraw-teacher-tools/install.sh
 ```
 
-Für ein **Update** dieselben Befehle erneut ausführen, danach `./install.sh update <container>`.
-
-Mit installiertem `git` (z. B. über das Plugin *NerdTools*) geht es auch so:
-
-```bash
-cd /mnt/user/appdata
-git clone https://github.com/berlinstold/seaf-excalidraw-teacher-tools.git   # erstes Mal
-cd seaf-excalidraw-teacher-tools && git pull                                  # Updates
-```
+Das ZIP enthält den Ordner `seaf-excalidraw-teacher-tools` mit allen Dateien. Bei einem Update werden
+vorhandene Dateien einfach überschrieben (siehe [Versionen und Updates](#versionen-und-updates)).
 
 ### 2. Containernamen herausfinden
 
@@ -311,7 +302,7 @@ Danach mit Strg + F5 testen.
 Ganz ohne Änderung am Server:
 
 1. Die Browser-Erweiterung **Tampermonkey** oder **Violentmonkey** installieren.
-2. Im Dashboard der Erweiterung ein neues Skript anlegen und den kompletten Inhalt von `excalidraw-timer.js` einfügen.
+2. Im Dashboard der Erweiterung ein neues Skript anlegen und den kompletten Inhalt von `excalidraw-timer.js` einfügen. Die Datei liegt jedem [Release](https://github.com/berlinstold/seaf-excalidraw-teacher-tools/releases/latest) auch einzeln bei.
 3. Im Kopf die Zeile
    ```
    // @match        https://seafile.example.com/*
@@ -345,6 +336,45 @@ sich deshalb auch, um das Plugin zuerst auszuprobieren.
 
 Tipp: Ist der Ton aktiv, sollte der Timer einmal per Klick gestartet werden. Browser erlauben Töne erst
 nach einer Nutzerinteraktion auf der Seite.
+
+## Versionen und Updates
+
+Das Projekt nutzt [Semantic Versioning](https://semver.org/lang/de/) (`Hauptversion.Nebenversion.Fehlerbehebung`):
+
+| Teil | Wird erhöht bei | Beispiel |
+|---|---|---|
+| Hauptversion | großen Umbauten oder geänderter Bedienung/Installation | 1.x → 2.0.0 (Präsentationsmodus) |
+| Nebenversion | neuen Funktionen | 2.0 → 2.1.0 (Timer-Titel) |
+| Fehlerbehebung | reinen Korrekturen | 2.1.0 → 2.1.1 |
+
+Jede Version erscheint als [Release](https://github.com/berlinstold/seaf-excalidraw-teacher-tools/releases) mit
+Änderungsliste und dem fertigen Paket `seaf-excalidraw-teacher-tools.zip`. Der Stand auf `main` kann zwischen
+zwei Releases unfertige Änderungen enthalten. Für den Server deshalb immer ein Release verwenden.
+
+**Update auf dem Server:**
+
+```bash
+cd /mnt/user/appdata
+wget -O teacher-tools.zip https://github.com/berlinstold/seaf-excalidraw-teacher-tools/releases/latest/download/seaf-excalidraw-teacher-tools.zip
+unzip -q -o teacher-tools.zip && rm teacher-tools.zip
+cd seaf-excalidraw-teacher-tools && ./install.sh update <containername>
+```
+
+Eine bestimmte ältere Version installierst du, indem du `latest/download` durch `download/v2.1.0`
+(bzw. die gewünschte Versionsnummer) ersetzt. Welche Version läuft, zeigt `./install.sh update` in seiner Ausgabe.
+Im Browser steht sie in der ersten Zeile von `/seafile-plugins/excalidraw-timer.js`.
+
+### Wie ein Release entsteht
+
+Releases werden automatisch von GitHub Actions erstellt (`.github/workflows/release.yml`):
+
+1. In `excalidraw-timer.js` die Zeile `// @version` auf die neue Nummer setzen.
+2. In `CHANGELOG.md` oben einen Abschnitt `## <neue Nummer>` mit den Änderungen anlegen.
+3. Auf `main` pushen.
+
+Der Workflow prüft Skript und Installer und legt dann den Tag `v<Nummer>` und das Release an, mit dem
+Changelog-Abschnitt als Beschreibung und dem ZIP-Paket als Download. Fehlt der Changelog-Abschnitt, bricht
+er mit einer Fehlermeldung ab. Ist die Version schon veröffentlicht, passiert nichts.
 
 ---
 
