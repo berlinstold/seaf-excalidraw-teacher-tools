@@ -3,7 +3,8 @@
 ## 2.2.0 (in Arbeit)
 
 - Neu: Stundenuhr in der Leiste (nur für Lehrende, nie in der Lernendenansicht)
-  - Restzeit der Unterrichtsstunde minutengenau, ab 5 Minuten Restzeit orange, beim Überziehen rot
+  - Restzeit der Unterrichtsstunde minutengenau in Kurzform („23 min“), ab 5 Minuten Restzeit orange, beim Überziehen rot
+  - Ausführliche Anzeige im Tooltip und im Fenster; bei schmaler Leiste automatisch Minimalform („23′“)
   - Einzel- oder Doppelstunde mit Pause, Phasen werden angezeigt („1. Std.“, „Pause“, „2. Std.“)
   - Beginn minutengenau verschieben (−1/+1) oder als Uhrzeit eintippen
   - Läuft über Neuladen hinweg, verschwindet 30 Minuten nach Stundenende von selbst

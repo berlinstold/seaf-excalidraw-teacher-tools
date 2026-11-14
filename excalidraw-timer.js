@@ -1456,27 +1456,46 @@
       return { phase: 'over', ms: el - totalMin(lesson.type, lesson.len, lesson.brk) * MIN };
     }
 
+    function remMin(st) { return Math.ceil(st.ms / MIN); }
+
+    // Kurzform für die Leiste (muss schmal bleiben)
     function label() {
       var st = status(now());
       if (!st) return null;
-      var rem = Math.ceil(st.ms / MIN);
       var warn = st.ms <= LESSON_WARN_MINUTES * MIN;
       switch (st.phase) {
-        case 'before': return { text: 'Beginn in ' + rem + ' min', cls: 'paused' };
-        case 'single': return { text: 'noch ' + rem + ' min', cls: warn ? 'warn' : '' };
-        case 'first': return { text: '1. Std. · noch ' + rem + ' min', cls: warn ? 'warn' : '' };
-        case 'break': return { text: 'Pause · noch ' + rem + ' min', cls: 'paused' };
-        case 'second': return { text: '2. Std. · noch ' + rem + ' min', cls: warn ? 'warn' : '' };
+        // "mini" wird genutzt, wenn die Excalidraw-Leiste zu schmal ist
+        case 'before': return { text: 'in ' + remMin(st) + ' min', mini: remMin(st) + '′', cls: 'paused' };
+        case 'break': return { text: 'Pause ' + remMin(st) + ' min', mini: 'P ' + remMin(st) + '′', cls: 'paused' };
+        case 'single': case 'first': case 'second':
+          return { text: remMin(st) + ' min', mini: remMin(st) + '′', cls: warn ? 'warn' : '' };
         default:
           var over = Math.floor(st.ms / MIN);
-          return { text: over > 0 ? 'Ende · +' + over + ' min' : 'Ende', cls: 'alarm' };
+          return { text: over > 0 ? '+' + over + ' min' : 'Ende', mini: over > 0 ? '+' + over + '′' : '0′', cls: 'alarm' };
+      }
+    }
+
+    // Ausführliche Form für Tooltip und Fenster
+    function longText() {
+      var st = status(now());
+      if (!st) return '';
+      var r = remMin(st);
+      switch (st.phase) {
+        case 'before': return 'Beginnt in ' + r + ' min';
+        case 'single': return 'Noch ' + r + ' min';
+        case 'first': return '1. Stunde · noch ' + r + ' min bis zur Pause';
+        case 'break': return 'Pause · noch ' + r + ' min';
+        case 'second': return '2. Stunde · noch ' + r + ' min';
+        default:
+          var over = Math.floor(st.ms / MIN);
+          return over > 0 ? 'Stunde vorbei · ' + over + ' min überzogen' : 'Stunde vorbei';
       }
     }
 
     function title() {
       if (!lesson) return 'Stundenuhr';
-      return 'Stundenuhr – ' + (lesson.type === 'double' ? 'Doppelstunde' : 'Einzelstunde') +
-        ', ' + hhmm(lesson.start) + '–' + hhmm(endAt());
+      return 'Stundenuhr – ' + longText() + ' (' + (lesson.type === 'double' ? 'Doppelstunde' : 'Einzelstunde') +
+        ', ' + hhmm(lesson.start) + '–' + hhmm(endAt()) + ')';
     }
 
     // Abgelaufene Stunde nach einer Weile von selbst entfernen
@@ -1517,6 +1536,9 @@
     var CSS = BASE_CSS + '\n' + [
       '.panel{width:290px;cursor:default;padding:8px 12px 12px}',
       '.types{display:flex;gap:6px;margin:6px 0 10px}',
+      '.now{font-weight:600;padding:7px 9px;border-radius:8px;background:var(--track);margin-top:4px;font-variant-numeric:tabular-nums}',
+      '.now.warn{color:#e8590c}',
+      '.now.alarm{color:var(--warn)}',
       '.type{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 4px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--fg);font:inherit;font-weight:600;cursor:pointer}',
       '.type small{font-weight:400;font-size:11px;color:var(--muted)}',
       '.type:hover{background:var(--btn)}',
@@ -1541,6 +1563,7 @@
         '<div class="panel" role="dialog" aria-label="Stundenuhr">' +
         '  <div class="head"><span class="title">Stundenuhr</span><span class="spacer"></span>' +
         '    <button class="icon" data-act="close" title="Schließen">' + ICON_CLOSE + '</button></div>' +
+        '  <div class="now" hidden></div>' +
         '  <div class="types">' +
         '    <button class="type" data-act="type" data-type="single">Einzelstunde<small class="d-single"></small></button>' +
         '    <button class="type" data-act="type" data-type="double">Doppelstunde<small class="d-double"></small></button>' +
@@ -1612,6 +1635,13 @@
       var L = lenMin(), B = brkMin();
       var type = lesson ? lesson.type : prefType;
       pop.panel.classList.toggle('dark', isDark());
+      var nowEl = r.querySelector('.now');
+      var lt = longText();
+      nowEl.hidden = !lt;
+      if (nowEl.textContent !== lt) nowEl.textContent = lt;
+      var lab = label();
+      nowEl.className = 'now' + (lab && (lab.cls === 'warn' || lab.cls === 'alarm') ? ' ' + lab.cls : '');
+      nowEl.hidden = !lt;
       r.querySelector('.d-single').textContent = LESSON_MINUTES + ' min';
       r.querySelector('.d-double').textContent = LESSON_MINUTES + ' + ' + LESSON_BREAK_MINUTES + ' + ' + LESSON_MINUTES + ' min';
       Array.prototype.forEach.call(r.querySelectorAll('.type'), function (b) {
@@ -1677,11 +1707,12 @@
       '  border-radius:var(--border-radius-lg,.5rem);background:transparent;color:var(--icon-fill-color,#1b1b1f);cursor:pointer}',
       '.sf-ex-tbtn:hover{background:var(--button-hover-bg,rgba(0,0,0,.06))}',
       '.sf-ex-tbtn.sf-active{background:var(--color-primary-light,#e0dfff);color:var(--color-primary-darker,#5b57d1)}',
-      '.sf-ex-tbtn svg{width:var(--lg-icon-size,1rem);height:var(--lg-icon-size,1rem);pointer-events:none}',
+      '.sf-ex-tbtn svg{width:var(--lg-icon-size,1rem);height:var(--lg-icon-size,1rem);pointer-events:none;flex:0 0 auto}',
       '.sf-ex-tbtn .sf-badge{position:absolute;top:4px;right:4px;width:7px;height:7px;border-radius:50%;background:#e03131;display:none}',
       '.sf-ex-tbtn.sf-running .sf-badge{display:block}',
       '.sf-ex-tbtn .sf-tlabel{display:none;margin-left:5px;font:600 11px/1 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:.2px;pointer-events:none}',
-      '.sf-ex-tbtn.sf-has-label{width:auto!important;padding:0 8px 0 7px}',
+      '.sf-ex-tbtn.sf-has-label{width:auto!important;padding:0 8px 0 7px;flex-shrink:0;white-space:nowrap}',
+      '.sf-ex-tbtn .sf-tlabel{white-space:nowrap}',
       '.sf-ex-tbtn.sf-has-label .sf-tlabel{display:inline}',
       '.sf-ex-tbtn.sf-has-label .sf-badge{display:none!important}',
       '.sf-ex-tbtn .sf-tlabel.paused{opacity:.55}',
@@ -1835,8 +1866,16 @@
         lb.classList.toggle('sf-has-label', !!ll);
         var lspan = lb.querySelector('.sf-tlabel');
         if (lspan) {
-          var lt = ll ? ll.text : '';
+          var lt = ll ? (lb.__mini ? ll.mini : ll.text) : '';
           if (lspan.textContent !== lt) lspan.textContent = lt;
+          // Passt die Leiste nicht mehr, auf die Minimalform umschalten (und erst bei viel Platz zurück)
+          var bar = lb.parentElement;
+          if (ll && bar && bar.id !== FLOAT_ID) {
+            var over = bar.scrollWidth - bar.clientWidth;
+            if (!lb.__mini && over > 1) { lb.__mini = true; lspan.textContent = ll.mini; }
+            else if (lb.__mini && lb.__fullW && bar.clientWidth - (bar.scrollWidth - lb.offsetWidth + lb.__fullW) > 8) { lb.__mini = false; lspan.textContent = ll.text; }
+            if (!lb.__mini) lb.__fullW = lb.offsetWidth;
+          }
           var lc = 'sf-tlabel' + (ll && ll.cls ? ' ' + ll.cls : '');
           if (lspan.className !== lc) lspan.className = lc;
         }

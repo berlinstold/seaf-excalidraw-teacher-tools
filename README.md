@@ -72,9 +72,10 @@ Teilnehmern einer gemeinsamen Whiteboard-Sitzung synchronisiert und nicht in der
 
 ## Stundenuhr
 
-Ganz rechts in der Leiste zeigt ein Uhr-Symbol die Restzeit der laufenden Unterrichtsstunde, z. B.
-„noch 23 min“. Die Anzeige ist minutengenau, damit sie nicht ständig springt. Sie ist nur für Lehrende gedacht
-und erscheint in der Lernendenansicht nie.
+Ganz rechts in der Leiste zeigt ein Uhr-Symbol die Restzeit der laufenden Unterrichtsstunde, z. B. „23 min“.
+Die Anzeige ist minutengenau, damit sie nicht ständig springt. Sie ist nur für Lehrende gedacht und erscheint in
+der Lernendenansicht nie. Die ausführliche Fassung (z. B. „1. Stunde · noch 23 min bis zur Pause“) steht im
+Tooltip und oben im Fenster der Stundenuhr.
 
 <p>
   <img src="docs/images/lesson-toolbar.png" alt="Stundenuhr in der Leiste" height="44">
@@ -91,13 +92,16 @@ und erscheint in der Lernendenansicht nie.
 
 **Anzeige:**
 
-| Zustand | Anzeige |
-|---|---|
-| Stunde läuft | „noch 23 min“ |
-| Letzte 5 Minuten | Schrift orange |
-| Doppelstunde | „1. Std. · noch 12 min“, „Pause · noch 3 min“, „2. Std. · noch 40 min“ |
-| Überzogen | „Ende · +2 min“ in Rot |
-| Beginn in der Zukunft eingetragen | „Beginn in 5 min“ |
+| Zustand | Leiste | Bei schmaler Leiste |
+|---|---|---|
+| Stunde läuft (auch 1. oder 2. Stunde einer Doppelstunde) | „23 min“ | „23′“ |
+| Letzte 5 Minuten vor Pause oder Ende | orange | orange |
+| Pause in der Doppelstunde | „Pause 3 min“ | „P 3′“ |
+| Überzogen | „+2 min“ in Rot | „+2′“ |
+| Beginn in der Zukunft eingetragen | „in 5 min“ | „5′“ |
+
+Wird die Excalidraw-Leiste zu schmal, etwa in einem kleinen Fenster, schaltet die Anzeige von selbst auf die
+Kurzform um.
 
 Die Stunde läuft über ein Neuladen hinweg weiter und gilt für alle Tabs desselben Browsers. Längen von
 Stunde und Pause stellst du unter [Anpassen](#anpassen) ein.
