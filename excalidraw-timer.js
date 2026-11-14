@@ -3,7 +3,7 @@
 // @namespace    https://github.com/berlinstold/seaf-excalidraw-teacher-tools
 // @homepageURL  https://github.com/berlinstold/seaf-excalidraw-teacher-tools
 // @license      MIT
-// @version      2.2.0-dev
+// @version      2.2.0
 // @description  Timer-Overlay und Präsentationsmodus (Lehrenden-/Lernendenansicht) für Excalidraw-Whiteboards in Seafile
 // @match        https://seafile.example.com/*
 // @grant        none

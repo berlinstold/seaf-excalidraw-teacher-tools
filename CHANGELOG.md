@@ -1,11 +1,11 @@
 # Changelog
 
-## 2.2.0 (in Arbeit)
+## 2.2.0
 
 - Neu: Stundenuhr in der Leiste (nur für Lehrende, nie in der Lernendenansicht)
   - Restzeit der Unterrichtsstunde minutengenau in Kurzform („23 min“), ab 5 Minuten Restzeit orange, beim Überziehen rot
   - Ausführliche Anzeige im Tooltip und im Fenster; bei schmaler Leiste automatisch Minimalform („23′“)
-  - Einzel- oder Doppelstunde mit Pause, Phasen werden angezeigt („1. Std.“, „Pause“, „2. Std.“)
+  - Einzel- oder Doppelstunde mit Pause; die Pause erscheint in der Leiste („Pause 3 min“), die aktuelle Stunde im Tooltip und im Fenster
   - Beginn minutengenau verschieben (−1/+1) oder als Uhrzeit eintippen
   - Läuft über Neuladen hinweg, verschwindet 30 Minuten nach Stundenende von selbst
   - Stunden- und Pausenlänge oben im Skript einstellbar (`LESSON_MINUTES`, `LESSON_BREAK_MINUTES`)
