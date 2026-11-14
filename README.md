@@ -4,10 +4,11 @@ Erweiterungen für das Excalidraw-Whiteboard in **Seafile Community Edition 13**
 Einsatz als digitale Tafel im Unterricht:
 
 - **Timer:** verschiebbares Overlay mit Countdown und Stoppuhr
+- **Stundenuhr:** Restzeit der Unterrichtsstunde klein in der Leiste, für Einzel- und Doppelstunden, nur für Lehrende sichtbar
 - **Präsentationsmodus:** getrennte **Lehrendenansicht** (dein Bildschirm) und **Lernendenansicht** (Beamer).
   Die Tafel lässt sich für Lernende einfrieren, um unbemerkt vorzubereiten, und die Ansicht lässt sich wahlweise spiegeln.
 
-Zwei zusätzliche Buttons in der oberen Excalidraw-Leiste öffnen die Funktionen.
+Drei zusätzliche Elemente in der oberen Excalidraw-Leiste öffnen die Funktionen.
 
 <p><img src="docs/images/screenshot.png" alt="Screenshot" height="500"></p>
 <p>
@@ -66,6 +67,40 @@ script is injected into Seahub via `sub_filter` in the nginx inside the Seafile 
 
 **Wichtig zu wissen:** Der Timer läuft **lokal im Browser** jedes Nutzers. Er wird nicht mit anderen
 Teilnehmern einer gemeinsamen Whiteboard-Sitzung synchronisiert und nicht in der `.exdraw`-Datei gespeichert.
+
+---
+
+## Stundenuhr
+
+Ganz rechts in der Leiste zeigt ein Uhr-Symbol die Restzeit der laufenden Unterrichtsstunde, z. B.
+„noch 23 min“. Die Anzeige ist minutengenau, damit sie nicht ständig springt. Sie ist nur für Lehrende gedacht
+und erscheint in der Lernendenansicht nie.
+
+<p>
+  <img src="docs/images/lesson-toolbar.png" alt="Stundenuhr in der Leiste" height="44">
+</p>
+<p><img src="docs/images/lesson-popover.png" alt="Einstellungen der Stundenuhr" width="290"></p>
+
+**Bedienung:** Ein Klick auf das Uhr-Symbol öffnet ein kleines Fenster:
+
+- **Einzelstunde** oder **Doppelstunde** wählen (Doppelstunde = Stunde + Pause + Stunde).
+- **Jetzt starten** setzt den Beginn auf die aktuelle Minute.
+- **−1 / +1** verschiebt den Beginn minutengenau, z. B. wenn die Stunde später angefangen hat. Alternativ die
+  Uhrzeit direkt eintippen (z. B. `8:03`) und Enter drücken. Ohne laufende Stunde startet das die Stunde zu dieser Zeit.
+- **Beenden** blendet die Anzeige aus. Etwa 30 Minuten nach Stundenende verschwindet sie auch von selbst.
+
+**Anzeige:**
+
+| Zustand | Anzeige |
+|---|---|
+| Stunde läuft | „noch 23 min“ |
+| Letzte 5 Minuten | Schrift orange |
+| Doppelstunde | „1. Std. · noch 12 min“, „Pause · noch 3 min“, „2. Std. · noch 40 min“ |
+| Überzogen | „Ende · +2 min“ in Rot |
+| Beginn in der Zukunft eingetragen | „Beginn in 5 min“ |
+
+Die Stunde läuft über ein Neuladen hinweg weiter und gilt für alle Tabs desselben Browsers. Längen von
+Stunde und Pause stellst du unter [Anpassen](#anpassen) ein.
 
 ---
 
@@ -364,6 +399,21 @@ Eine bestimmte ältere Version installierst du, indem du `latest/download` durch
 (bzw. die gewünschte Versionsnummer) ersetzt. Welche Version läuft, zeigt `./install.sh update` in seiner Ausgabe.
 Im Browser steht sie in der ersten Zeile von `/seafile-plugins/excalidraw-timer.js`.
 
+### Entwicklungsstand testen
+
+Zwischen zwei Releases kann `main` neue Funktionen zum Ausprobieren enthalten. Die Versionsnummer trägt dann
+einen Zusatz wie `2.2.0-dev`, und dafür entsteht kein Release. Den aktuellen Stand von `main` installierst du so:
+
+```bash
+cd /mnt/user/appdata
+wget -O teacher-tools-main.zip https://github.com/berlinstold/seaf-excalidraw-teacher-tools/archive/refs/heads/main.zip
+unzip -q -o teacher-tools-main.zip && rm teacher-tools-main.zip
+cp -r seaf-excalidraw-teacher-tools-main/. seaf-excalidraw-teacher-tools/ && rm -rf seaf-excalidraw-teacher-tools-main
+cd seaf-excalidraw-teacher-tools && chmod +x install.sh && ./install.sh update <containername>
+```
+
+Zurück zum letzten Release geht es mit dem normalen Update-Befehl oben.
+
 ### Wie ein Release entsteht
 
 Releases werden automatisch von GitHub Actions erstellt (`.github/workflows/release.yml`):
@@ -372,6 +422,7 @@ Releases werden automatisch von GitHub Actions erstellt (`.github/workflows/rele
 2. In `CHANGELOG.md` oben einen Abschnitt `## <neue Nummer>` mit den Änderungen anlegen.
 3. Auf `main` pushen.
 
+Versionen mit Zusatz (`2.2.0-dev`, `2.2.0-beta.1`) gelten als Entwicklungsstand und lösen kein Release aus.
 Der Workflow prüft Skript und Installer und legt dann den Tag `v<Nummer>` und das Release an, mit dem
 Changelog-Abschnitt als Beschreibung und dem ZIP-Paket als Download. Fehlt der Changelog-Abschnitt, bricht
 er mit einer Fehlermeldung ab. Ist die Version schon veröffentlicht, passiert nichts.
@@ -420,7 +471,15 @@ Oben in `excalidraw-timer.js`:
 ```js
 var PRESETS_MIN = [1, 3, 5, 10, 15, 25, 45];   // Schnellwahl-Buttons in Minuten
 var SIZES = ['s', 'm', 'l', 'xl'];             // Schriftgrößen-Stufen
+
+var LESSON_MINUTES = 45;          // Länge einer Unterrichtsstunde
+var LESSON_BREAK_MINUTES = 5;     // Pause innerhalb einer Doppelstunde (0 = keine)
+var LESSON_WARN_MINUTES = 5;      // ab dieser Restzeit wird die Stundenuhr orange
+var LESSON_AUTOHIDE_MINUTES = 30; // so lange nach Stundenende verschwindet die Anzeige
 ```
+
+Wer das Plugin für eine ganze Schule installiert, setzt hier einmal die dort üblichen Stunden- und Pausenlängen.
+Sie gelten dann für alle Lehrkräfte, ohne dass jemand etwas einstellen muss.
 
 Nach einer Änderung die Versionsnummer in der Zeile `// @version` erhöhen und `./install.sh update <container>`
 ausführen. Dadurch laden alle Browser die neue Datei statt einer zwischengespeicherten Kopie.

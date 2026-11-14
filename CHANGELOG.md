@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.2.0 (in Arbeit)
+
+- Neu: Stundenuhr in der Leiste (nur für Lehrende, nie in der Lernendenansicht)
+  - Restzeit der Unterrichtsstunde minutengenau, ab 5 Minuten Restzeit orange, beim Überziehen rot
+  - Einzel- oder Doppelstunde mit Pause, Phasen werden angezeigt („1. Std.“, „Pause“, „2. Std.“)
+  - Beginn minutengenau verschieben (−1/+1) oder als Uhrzeit eintippen
+  - Läuft über Neuladen hinweg, verschwindet 30 Minuten nach Stundenende von selbst
+  - Stunden- und Pausenlänge oben im Skript einstellbar (`LESSON_MINUTES`, `LESSON_BREAK_MINUTES`)
+- Release-Workflow: Versionen mit Zusatz (z. B. `-dev`) lösen kein Release aus
+
 ## 2.1.0
 
 - Timer bleibt in der Lernendenansicht sichtbar, wenn er in der Lehrendenansicht geschlossen wird; ein- und ausblenden über den Schalter im Präsentationspanel oder das neue Augen-Symbol im Timer

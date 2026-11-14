@@ -3,7 +3,7 @@
 // @namespace    https://github.com/berlinstold/seaf-excalidraw-teacher-tools
 // @homepageURL  https://github.com/berlinstold/seaf-excalidraw-teacher-tools
 // @license      MIT
-// @version      2.1.0
+// @version      2.2.0-dev
 // @description  Timer-Overlay und Präsentationsmodus (Lehrenden-/Lernendenansicht) für Excalidraw-Whiteboards in Seafile
 // @match        https://seafile.example.com/*
 // @grant        none
@@ -12,6 +12,10 @@
 //
 // Seafile Excalidraw Teacher Tools
 // --------------------------------
+// Stundenuhr (nur Lehrende):
+//   - Restzeit der Unterrichtsstunde klein in der Leiste, Einzel- oder Doppelstunde,
+//     Beginn minutengenau einstellbar. Längen: LESSON_MINUTES / LESSON_BREAK_MINUTES unten.
+//
 // Timer:
 //   - Button in der oberen Excalidraw-Leiste, verschiebbares Overlay (Countdown/Stoppuhr)
 //   - Alt+Shift+T öffnet/schließt das Overlay
@@ -45,6 +49,14 @@
   var FLOATING_FALLBACK_DELAY = 2500;
   var HEARTBEAT_MS = 1500;
   var PEER_TIMEOUT_MS = 4500;
+
+  // Stundenuhr: Länge einer Unterrichtsstunde und Pause innerhalb einer Doppelstunde (Minuten).
+  // Für eine ganze Schule hier einmal anpassen, z. B. 60 und 10.
+  var LESSON_MINUTES = 45;
+  var LESSON_BREAK_MINUTES = 5;
+  var LESSON_WARN_MINUTES = 5;      // ab dieser Restzeit wird die Anzeige farbig
+  var LESSON_AUTOHIDE_MINUTES = 30; // so lange nach Stundenende verschwindet die Anzeige von selbst
+  var LESSON_BTN_ID = 'sf-ex-lesson-btn';
 
   var TOOLBAR_SELECTORS = [
     '.App-toolbar-content',
@@ -177,6 +189,9 @@
     'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
     '<path d="M5 13a7 7 0 1 0 14 0a7 7 0 0 0-14 0z"/><path d="M14.5 10.5l-2.5 2.5"/><path d="M17 8l1-1"/>' +
     '<path d="M14 3h-4"/></svg>';
+  var ICON_CLOCK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" ' +
+    'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0-18 0"/><path d="M12 7v5l3 2"/></svg>';
   var ICON_PRESENT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" ' +
     'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
     '<path d="M3 4l18 0"/><path d="M4 4v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-10"/><path d="M12 16l0 4"/>' +
@@ -1324,6 +1339,7 @@
       Buttons.update();
       renderPanel();
       renderBadge();
+      Lesson.render();
     }
 
     // Wird regelmäßig aus check() aufgerufen
@@ -1381,6 +1397,277 @@
   })();
 
   // ===========================================================================
+  // STUNDENUHR (nur für Lehrende, nie in der Lernendenansicht)
+  // ===========================================================================
+  var Lesson = (function () {
+    var KEY = 'sf-excalidraw-lesson:v1';
+    var PREF_KEY = 'sf-excalidraw-lesson-pref:v1';
+    var MIN = 60000;
+
+    var lesson = null;  // { type: 'single'|'double', start: ms, len: min, brk: min }
+    var prefType = 'single';
+    var pop = null;
+    var popOpen = false;
+    var tick = null;
+
+    function load() {
+      lesson = jsonGet(localStorage, KEY);
+      if (!lesson || typeof lesson.start !== 'number') lesson = null;
+      var pref = jsonGet(localStorage, PREF_KEY);
+      prefType = pref && pref.type === 'double' ? 'double' : 'single';
+    }
+    function save() {
+      if (lesson) jsonSet(localStorage, KEY, lesson); else storageRemove(localStorage, KEY);
+      jsonSet(localStorage, PREF_KEY, { type: prefType });
+    }
+
+    function lenMin() { return lesson ? lesson.len : LESSON_MINUTES; }
+    function brkMin() { return lesson ? lesson.brk : LESSON_BREAK_MINUTES; }
+    function totalMin(type, len, brk) { return type === 'double' ? len * 2 + brk : len; }
+    function endAt() { return lesson ? lesson.start + totalMin(lesson.type, lesson.len, lesson.brk) * MIN : 0; }
+
+    function floorMinute(t) { var d = new Date(t); d.setSeconds(0, 0); return d.getTime(); }
+    function hhmm(t) { var d = new Date(t); return pad(d.getHours()) + ':' + pad(d.getMinutes()); }
+
+    // "8:03", "08.03", "803", "0803"
+    function parseClock(str) {
+      var s = String(str || '').trim().replace('.', ':');
+      var m = s.match(/^(\d{1,2}):(\d{2})$/) || s.match(/^(\d{1,2})(\d{2})$/);
+      if (!m) return null;
+      var h = +m[1], mi = +m[2];
+      if (h > 23 || mi > 59) return null;
+      var d = new Date(); d.setHours(h, mi, 0, 0);
+      return d.getTime();
+    }
+
+    // Phase und Restzeit berechnen
+    function status(t) {
+      if (!lesson) return null;
+      var L = lesson.len * MIN, B = lesson.brk * MIN;
+      var el = t - lesson.start;
+      if (el < 0) return { phase: 'before', ms: -el };
+      if (lesson.type === 'single') {
+        if (el < L) return { phase: 'single', ms: L - el };
+      } else {
+        if (el < L) return { phase: 'first', ms: L - el };
+        if (el < L + B) return { phase: 'break', ms: L + B - el };
+        if (el < 2 * L + B) return { phase: 'second', ms: 2 * L + B - el };
+      }
+      return { phase: 'over', ms: el - totalMin(lesson.type, lesson.len, lesson.brk) * MIN };
+    }
+
+    function label() {
+      var st = status(now());
+      if (!st) return null;
+      var rem = Math.ceil(st.ms / MIN);
+      var warn = st.ms <= LESSON_WARN_MINUTES * MIN;
+      switch (st.phase) {
+        case 'before': return { text: 'Beginn in ' + rem + ' min', cls: 'paused' };
+        case 'single': return { text: 'noch ' + rem + ' min', cls: warn ? 'warn' : '' };
+        case 'first': return { text: '1. Std. · noch ' + rem + ' min', cls: warn ? 'warn' : '' };
+        case 'break': return { text: 'Pause · noch ' + rem + ' min', cls: 'paused' };
+        case 'second': return { text: '2. Std. · noch ' + rem + ' min', cls: warn ? 'warn' : '' };
+        default:
+          var over = Math.floor(st.ms / MIN);
+          return { text: over > 0 ? 'Ende · +' + over + ' min' : 'Ende', cls: 'alarm' };
+      }
+    }
+
+    function title() {
+      if (!lesson) return 'Stundenuhr';
+      return 'Stundenuhr – ' + (lesson.type === 'double' ? 'Doppelstunde' : 'Einzelstunde') +
+        ', ' + hhmm(lesson.start) + '–' + hhmm(endAt());
+    }
+
+    // Abgelaufene Stunde nach einer Weile von selbst entfernen
+    function expire() {
+      if (lesson && now() > endAt() + LESSON_AUTOHIDE_MINUTES * MIN) { lesson = null; save(); }
+    }
+
+    // --- Aktionen -------------------------------------------------------------
+    function startAt(t) {
+      lesson = { type: prefType, start: floorMinute(t), len: LESSON_MINUTES, brk: LESSON_BREAK_MINUTES };
+      save(); changed();
+    }
+    function setType(type) {
+      prefType = type;
+      if (lesson) lesson.type = type;
+      save(); changed();
+    }
+    function shift(deltaMin) {
+      if (!lesson) { startAt(now() + deltaMin * MIN); return; }
+      lesson.start += deltaMin * MIN;
+      save(); changed();
+    }
+    function stop() { lesson = null; save(); changed(); }
+
+    function changed() {
+      Buttons.update();
+      renderPop();
+      ensureTick();
+    }
+
+    function ensureTick() {
+      var need = !!lesson || popOpen;
+      if (need && !tick) tick = setInterval(function () { expire(); Buttons.update(); renderPop(); ensureTick(); }, 1000);
+      if (!need && tick) { clearInterval(tick); tick = null; }
+    }
+
+    // --- Einstellungsfenster ----------------------------------------------------
+    var CSS = BASE_CSS + '\n' + [
+      '.panel{width:290px;cursor:default;padding:8px 12px 12px}',
+      '.types{display:flex;gap:6px;margin:6px 0 10px}',
+      '.type{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 4px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--fg);font:inherit;font-weight:600;cursor:pointer}',
+      '.type small{font-weight:400;font-size:11px;color:var(--muted)}',
+      '.type:hover{background:var(--btn)}',
+      '.type.on{border:2px solid var(--primary);padding:6px 3px;color:var(--primary)}',
+      '.row{display:flex;align-items:center;justify-content:space-between;padding:4px 0}',
+      '.row .k{color:var(--muted)}',
+      '.row .v{font-variant-numeric:tabular-nums;font-weight:600}',
+      '.adj{display:inline-flex;align-items:center;gap:6px}',
+      '.step{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--fg);font:inherit;font-weight:600;cursor:pointer;padding:0}',
+      '.step:hover{background:var(--btn)}',
+      '.clock{width:62px;height:28px;text-align:center;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--fg);font:inherit;font-weight:600;font-variant-numeric:tabular-nums;outline:none;padding:0;user-select:text;-webkit-user-select:text}',
+      '.clock:focus{border-color:var(--primary)}',
+      '.clock.idle{color:var(--muted)}',
+      '.actions{display:flex;gap:6px;margin-top:10px}',
+      '.actions .btn{flex:1}',
+      '.note{font-size:11px;color:var(--muted);margin-top:8px}',
+      '[hidden]{display:none!important}'
+    ].join('\n');
+
+    function html() {
+      return '' +
+        '<div class="panel" role="dialog" aria-label="Stundenuhr">' +
+        '  <div class="head"><span class="title">Stundenuhr</span><span class="spacer"></span>' +
+        '    <button class="icon" data-act="close" title="Schließen">' + ICON_CLOSE + '</button></div>' +
+        '  <div class="types">' +
+        '    <button class="type" data-act="type" data-type="single">Einzelstunde<small class="d-single"></small></button>' +
+        '    <button class="type" data-act="type" data-type="double">Doppelstunde<small class="d-double"></small></button>' +
+        '  </div>' +
+        '  <div class="row"><span class="k">Beginn</span><span class="adj">' +
+        '    <button class="step" data-act="minus" title="Beginn eine Minute früher">−1</button>' +
+        '    <input class="clock" type="text" size="1" inputmode="numeric" maxlength="5" autocomplete="off" spellcheck="false" title="Uhrzeit eintippen, z. B. 8:03">' +
+        '    <button class="step" data-act="plus" title="Beginn eine Minute später">+1</button></span></div>' +
+        '  <div class="row r-break"><span class="k">Pause</span><span class="v v-break"></span></div>' +
+        '  <div class="row"><span class="k">Ende</span><span class="v v-end"></span></div>' +
+        '  <div class="actions">' +
+        '    <button class="btn primary" data-act="start">Jetzt starten</button>' +
+        '    <button class="btn" data-act="stop">Beenden</button>' +
+        '  </div>' +
+        '  <div class="note">Nur für dich sichtbar, nicht in der Lernendenansicht.</div>' +
+        '</div>';
+    }
+
+    function ensurePop() {
+      if (pop && pop.host.isConnected) return;
+      var s = createShadowHost('sf-ex-lesson-pop', CSS, html(), 2147483001);
+      pop = { host: s.host, root: s.root, panel: s.root.querySelector('.panel'), clock: s.root.querySelector('.clock') };
+      s.root.addEventListener('click', function (e) {
+        var b = e.target.closest('[data-act]');
+        if (!b) return;
+        switch (b.getAttribute('data-act')) {
+          case 'close': setPop(false); break;
+          case 'type': setType(b.getAttribute('data-type')); break;
+          case 'minus': shift(-1); break;
+          case 'plus': shift(1); break;
+          case 'start': startAt(now()); break;
+          case 'stop': stop(); break;
+        }
+      });
+      pop.clock.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); commitClock(); pop.clock.blur(); }
+        else if (e.key === 'Escape') { e.preventDefault(); pop.clock.value = ''; pop.clock.blur(); renderPop(); }
+      });
+      pop.clock.addEventListener('blur', function () { if (pop.clock.value && pop.clock.__dirty) commitClock(); });
+      pop.clock.addEventListener('input', function () { pop.clock.__dirty = true; });
+    }
+
+    function commitClock() {
+      var t = parseClock(pop.clock.value);
+      pop.clock.__dirty = false;
+      if (t == null) { renderPop(); return; }
+      if (lesson) { lesson.start = t; save(); changed(); } else { startAt(t); }
+    }
+
+    function placePop() {
+      var btn = document.getElementById(LESSON_BTN_ID);
+      var w = pop.panel.offsetWidth || 290;
+      var x = window.innerWidth - w - 16, y = 64;
+      if (btn) {
+        var r = btn.getBoundingClientRect();
+        x = r.right - w;
+        y = r.bottom + 8;
+      }
+      pop.host.style.left = clamp(x, 8, Math.max(8, window.innerWidth - w - 8)) + 'px';
+      pop.host.style.top = clamp(y, 8, Math.max(8, window.innerHeight - (pop.panel.offsetHeight || 200) - 8)) + 'px';
+    }
+
+    function renderPop() {
+      var show = popOpen && excalidrawActive && Pres.role() !== 'lernende';
+      if (!show) { if (pop) pop.host.style.display = 'none'; return; }
+      ensurePop();
+      pop.host.style.display = '';
+      var r = pop.root;
+      var L = lenMin(), B = brkMin();
+      var type = lesson ? lesson.type : prefType;
+      pop.panel.classList.toggle('dark', isDark());
+      r.querySelector('.d-single').textContent = LESSON_MINUTES + ' min';
+      r.querySelector('.d-double').textContent = LESSON_MINUTES + ' + ' + LESSON_BREAK_MINUTES + ' + ' + LESSON_MINUTES + ' min';
+      Array.prototype.forEach.call(r.querySelectorAll('.type'), function (b) {
+        b.classList.toggle('on', b.getAttribute('data-type') === type);
+      });
+      var start = lesson ? lesson.start : floorMinute(now());
+      var end = start + totalMin(type, L, B) * MIN;
+      if (!(r.activeElement === pop.clock && pop.clock.__dirty)) pop.clock.value = hhmm(start);
+      pop.clock.classList.toggle('idle', !lesson);
+      r.querySelector('.r-break').hidden = type !== 'double' || B <= 0;
+      r.querySelector('.v-break').textContent = hhmm(start + L * MIN) + '–' + hhmm(start + (L + B) * MIN);
+      r.querySelector('.v-end').textContent = hhmm(end);
+      var sb = r.querySelector('[data-act=start]');
+      sb.textContent = lesson ? 'Neu starten (jetzt)' : 'Jetzt starten';
+      sb.classList.toggle('primary', !lesson);
+      r.querySelector('[data-act=stop]').hidden = !lesson;
+      placePop();
+    }
+
+    function setPop(open) {
+      popOpen = open;
+      if (open) { expire(); if (pop && pop.clock) pop.clock.__dirty = false; }
+      Buttons.update();
+      renderPop();
+      ensureTick();
+    }
+
+    // Klick außerhalb schließt das Fenster
+    document.addEventListener('pointerdown', function (e) {
+      if (!popOpen || !pop) return;
+      var path = e.composedPath ? e.composedPath() : [];
+      if (path.indexOf(pop.host) >= 0) return;
+      var btn = document.getElementById(LESSON_BTN_ID);
+      if (btn && path.indexOf(btn) >= 0) return;
+      setPop(false);
+    }, true);
+
+    window.addEventListener('storage', function (e) {
+      if (e.key === KEY || e.key === PREF_KEY) { load(); changed(); }
+    });
+
+    function init() { load(); expire(); ensureTick(); }
+
+    return {
+      init: init,
+      togglePop: function () { setPop(!popOpen); },
+      isOpen: function () { return popOpen; },
+      isActive: function () { return !!lesson; },
+      label: function () { expire(); return label(); },
+      title: title,
+      onResize: function () { if (popOpen && pop) placePop(); },
+      render: renderPop
+    };
+  })();
+
+  // ===========================================================================
   // Buttons in der Excalidraw-Leiste
   // ===========================================================================
   var Buttons = (function () {
@@ -1399,6 +1686,7 @@
       '.sf-ex-tbtn.sf-has-label .sf-badge{display:none!important}',
       '.sf-ex-tbtn .sf-tlabel.paused{opacity:.55}',
       '.sf-ex-tbtn .sf-tlabel.alarm{color:#e03131}',
+      '.sf-ex-tbtn .sf-tlabel.warn{color:#e8590c}',
       '.sf-ex-tbtn.sf-mirror .sf-badge{display:block;background:#2f9e44}',
       '.sf-ex-tbtn.sf-frozen .sf-badge{display:block;background:#e03131}',
       '.' + DIVIDER_CLASS + ':not(.App-toolbar__divider){width:1px;height:1.5rem;align-self:center;margin:0 .25rem;background:var(--default-border-color,#e0e0e0);flex:0 0 auto}',
@@ -1423,7 +1711,7 @@
       b.id = id;
       b.className = 'sf-ex-tbtn';
       b.setAttribute('aria-label', label);
-      b.innerHTML = icon + '<span class="sf-badge"></span>' + (id === TIMER_BTN_ID ? '<span class="sf-tlabel"></span>' : '');
+      b.innerHTML = icon + '<span class="sf-badge"></span>' + (id !== PRES_BTN_ID ? '<span class="sf-tlabel"></span>' : '');
       b.addEventListener('pointerdown', function (e) { e.stopPropagation(); });
       b.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); onClick(); });
       return b;
@@ -1432,12 +1720,13 @@
     function makeAll() {
       return [
         create(PRES_BTN_ID, ICON_PRESENT, 'Präsentation', function () { Pres.togglePanel(); }),
-        create(TIMER_BTN_ID, ICON_TIMER, 'Timer', function () { Timer.toggleOpen(); })
+        create(TIMER_BTN_ID, ICON_TIMER, 'Timer', function () { Timer.toggleOpen(); }),
+        create(LESSON_BTN_ID, ICON_CLOCK, 'Stundenuhr', function () { Lesson.togglePop(); })
       ];
     }
 
     function remove() {
-      [TIMER_BTN_ID, PRES_BTN_ID, FLOAT_ID].forEach(function (id) {
+      [TIMER_BTN_ID, PRES_BTN_ID, LESSON_BTN_ID, FLOAT_ID].forEach(function (id) {
         var el = document.getElementById(id);
         if (el) el.remove();
       });
@@ -1501,7 +1790,8 @@
       var pb = document.getElementById(PRES_BTN_ID);
 
       if (toolbar) {
-        if (tb && pb && toolbar.contains(tb) && toolbar.contains(pb)) return;
+        var lb = document.getElementById(LESSON_BTN_ID);
+        if (tb && pb && lb && toolbar.contains(tb) && toolbar.contains(pb) && toolbar.contains(lb)) return;
         remove();
         var div = document.createElement('div');
         div.className = DIVIDER_CLASS + (toolbar.querySelector('.App-toolbar__divider') ? ' App-toolbar__divider' : '');
@@ -1538,6 +1828,21 @@
         var t = 'Timer (Alt+Shift+T)' + (Timer.label() ? ' – ' + Timer.label() : '');
         if (tb.title !== t) tb.title = t;
       }
+      var lb = document.getElementById(LESSON_BTN_ID);
+      if (lb) {
+        var ll = Lesson.label();
+        lb.classList.toggle('sf-active', Lesson.isOpen());
+        lb.classList.toggle('sf-has-label', !!ll);
+        var lspan = lb.querySelector('.sf-tlabel');
+        if (lspan) {
+          var lt = ll ? ll.text : '';
+          if (lspan.textContent !== lt) lspan.textContent = lt;
+          var lc = 'sf-tlabel' + (ll && ll.cls ? ' ' + ll.cls : '');
+          if (lspan.className !== lc) lspan.className = lc;
+        }
+        var ltt = Lesson.title();
+        if (lb.title !== ltt) lb.title = ltt;
+      }
       var pb = document.getElementById(PRES_BTN_ID);
       if (pb) {
         pb.classList.toggle('sf-active', Pres.isPanelOpen());
@@ -1551,7 +1856,7 @@
     }
 
     function resync() {
-      [TIMER_BTN_ID, PRES_BTN_ID].forEach(function (id) {
+      [TIMER_BTN_ID, PRES_BTN_ID, LESSON_BTN_ID].forEach(function (id) {
         var b = document.getElementById(id);
         if (b && b.parentElement && b.parentElement.id !== FLOAT_ID) syncGeometry(b, b.parentElement);
       });
@@ -1619,6 +1924,7 @@
 
   function init() {
     Timer.init();
+    Lesson.init();
     Pres.init();
     new MutationObserver(scheduleCheck).observe(document.documentElement, { childList: true, subtree: true });
     document.addEventListener('keydown', onHotkey, true);
@@ -1626,6 +1932,7 @@
       Timer.onResize();
       Pres.onResize();
       Buttons.resync();
+      Lesson.onResize();
     });
     check();
   }
