@@ -12,7 +12,7 @@
 //
 // Seafile Excalidraw Teacher Tools
 // --------------------------------
-// Fragestellung und Hypothese:
+// Leitfrage und Hypothese:
 //   - Bibliothekselemente bzw. Panel-Buttons fügen markierte Textfelder in die Tafel ein;
 //     ihr Text erscheint dauerhaft oben links (auch in der Lernendenansicht), außer das
 //     Element ist selbst vollständig sichtbar.
@@ -62,6 +62,11 @@
   var LESSON_WARN_MINUTES = 5;      // ab dieser Restzeit wird die Anzeige farbig
   var LESSON_AUTOHIDE_MINUTES = 30; // so lange nach Stundenende verschwindet die Anzeige von selbst
   var LESSON_BTN_ID = 'sf-ex-lesson-btn';
+
+  // Leitfrage/Hypothese: Bezeichnungen der beiden Tafel-Elemente (z. B. 'Fragestellung' statt 'Leitfrage').
+  // Bereits auf Tafeln liegende Elemente werden weiterhin erkannt, auch nach einer Änderung.
+  var LABEL_QUESTION = 'Leitfrage';
+  var LABEL_HYPOTHESIS = 'Hypothese';
 
   var TOOLBAR_SELECTORS = [
     '.App-toolbar-content',
@@ -1182,7 +1187,7 @@
       '  <div class="section" data-view="elements">' +
       '    <div class="sep"></div>' +
       '    <div class="row"><span class="lbl">Tafel-Elemente<span class="sub">Text bleibt oben links dauerhaft sichtbar</span></span></div>' +
-      '    <div class="elbtns"><button class="btn" data-act="insq">Fragestellung einfügen</button><button class="btn" data-act="insh">Hypothese einfügen</button></div>' +
+      '    <div class="elbtns"><button class="btn" data-act="insq">' + LABEL_QUESTION + ' einfügen</button><button class="btn" data-act="insh">' + LABEL_HYPOTHESIS + ' einfügen</button></div>' +
       '    <button class="link" data-act="addlib">Zur Excalidraw-Bibliothek hinzufügen</button>' +
       '  </div>' +
       '</div>';
@@ -1320,7 +1325,7 @@
       if (!show) { if (badge) badge.host.style.display = 'none'; return; }
       ensureBadge();
       badge.host.style.display = '';
-      // unten rechts auf der Tafelfläche (oben links sitzt die Fragestellung);
+      // unten rechts auf der Tafelfläche (oben links sitzt die Leitfrage);
       // bei eingeblendeten Bedienelementen oberhalb der Excalidraw-Fußleiste
       var exr = getExcalidraw() ? getExcalidraw().getBoundingClientRect()
         : { right: window.innerWidth, bottom: window.innerHeight };
@@ -1724,21 +1729,35 @@
   // ===========================================================================
   // FRAGESTELLUNG UND HYPOTHESE
   // Quelle sind normale Excalidraw-Elemente (Rahmen mit Text) auf der Tafel,
-  // erkennbar an customData.sfTeacherTools oder am Textanfang "Fragestellung:" / "Hypothese:".
+  // erkennbar an customData.sfTeacherTools oder am Textanfang "Leitfrage:" / "Fragestellung:" / "Hypothese:".
   // Das Overlay zeigt ihren Text dauerhaft in der Ecke, solange das Element nicht
   // selbst vollständig auf dem Bildschirm zu sehen ist.
   // ===========================================================================
   var Question = (function () {
+    // Präfix zum Abschneiden ("Leitfrage:" / "Leitfrage ") – nur ganzes Wort
+    function prefixRe(words) {
+      return new RegExp('^\\s*(?:' + alts(words) + ')(?=\\s|:|$)\\s*:?\\s*', 'i');
+    }
+    // Erkennung von Textfeldern ohne Markierung: Doppelpunkt ist Pflicht ("Leitfrage: …")
+    function detectRe(words) {
+      return new RegExp('^\\s*(?:' + alts(words) + ')\\s*:', 'i');
+    }
+    function alts(words) {
+      return words.map(function (w) { return String(w).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }).join('|');
+    }
     var KINDS = {
-      // Fragestellung: Mint (#e6fcf5) mit Petrol-Rahmen; Hypothese: zartes Violett als Kontrast
-      question: { label: 'Fragestellung', prefix: /^\s*fragestellung\s*:?\s*/i, stroke: '#099268', bg: '#e6fcf5' },
-      hypothesis: { label: 'Hypothese', prefix: /^\s*hypothese\s*:?\s*/i, stroke: '#7048e8', bg: '#f3f0ff' }
+      // Leitfrage: Mint (#e6fcf5) mit Petrol-Rahmen; Hypothese: zartes Violett als Kontrast
+      question: { label: LABEL_QUESTION, words: [LABEL_QUESTION, 'Leitfrage', 'Fragestellung'], stroke: '#099268', bg: '#e6fcf5' },
+      hypothesis: { label: LABEL_HYPOTHESIS, words: [LABEL_HYPOTHESIS, 'Hypothese'], stroke: '#7048e8', bg: '#f3f0ff' }
     };
     var ORDER = ['question', 'hypothesis'];
+    ORDER.forEach(function (k) { KINDS[k].prefix = prefixRe(KINDS[k].words); KINDS[k].detect = detectRe(KINDS[k].words); });
     var MARK = 'sfTeacherTools';
     var COLLAPSE_KEY = 'sf-excalidraw-question-collapsed:v1';
-    var LIB_FLAG_KEY = 'sf-excalidraw-question-lib:v2';
-    var LIB_IDS = { question: 'sf-teacher-tools-fragestellung-v2', hypothesis: 'sf-teacher-tools-hypothese-v2' };
+    var LIB_PREFIX = 'sf-teacher-tools-';
+    var LIB_IDS = { question: LIB_PREFIX + 'question-v3', hypothesis: LIB_PREFIX + 'hypothesis-v3' };
+    // Ändert sich Design oder Bezeichnung, kommen die Einträge einmal neu in die Bibliothek
+    var LIB_FLAG_KEY = 'sf-excalidraw-question-lib:v3:' + LABEL_QUESTION + '|' + LABEL_HYPOTHESIS;
 
     var ui = null;
     var poll = null;
@@ -1770,7 +1789,7 @@
     }
 
     function prefixKind(text) {
-      for (var i = 0; i < ORDER.length; i++) if (KINDS[ORDER[i]].prefix.test(text || '')) return ORDER[i];
+      for (var i = 0; i < ORDER.length; i++) if (KINDS[ORDER[i]].detect.test(text || '')) return ORDER[i];
       return null;
     }
 
@@ -1826,15 +1845,15 @@
     // Aufbau: farbiger Reiter mit der Überschrift, darunter der Kasten zum Eintippen.
     // Beide liegen in einer Gruppe und bewegen sich gemeinsam.
     //   ┌───────────────┐
-    //   │ Fragestellung │
+    //   │  Leitfrage    │
     //   ├───────────────┴──────────────────────────┐
     //   │                    …                     │
     //   └──────────────────────────────────────────┘
     function makeElements(kind, cx, cy, fontFamily) {
       var k = KINDS[kind];
       var W = 520, H = 92, fs = 20;           // Eingabekasten
-      var lfs = 16, TH = 34;                   // Reiter
-      var TW = Math.round(k.label.length * lfs * 0.62 + 32);
+      var lfs = 24, TH = 46;                   // Reiter mit der Überschrift
+      var TW = Math.round(k.label.length * lfs * 0.6 + 40);
       var x0 = Math.round(cx - W / 2), yBody = Math.round(cy - H / 2 + TH / 2), yTab = yBody - TH + 1;
       var t = now(), gid = rid();
       var ids = { tab: rid(), tabText: rid(), body: rid(), bodyText: rid() };
@@ -1914,11 +1933,20 @@
       var getter = typeof lib.getLatestLibrary === 'function' ? lib.getLatestLibrary() : Promise.resolve([]);
       return Promise.resolve(getter).then(function (items) {
         items = items || [];
-        var missing = libraryItems().filter(function (it) { return !items.some(function (x) { return x && x.id === it.id; }); });
+        var mine = libraryItems();
+        var isCurrent = function (x) { return mine.some(function (it) { return x && x.id === it.id; }); };
+        var outdated = items.filter(function (x) { return x && typeof x.id === 'string' && x.id.indexOf(LIB_PREFIX) === 0 && !isCurrent(x); });
+        var missing = mine.filter(function (it) { return !items.some(function (x) { return x && x.id === it.id; }); });
         jsonSet(localStorage, LIB_FLAG_KEY, true);
-        if (!missing.length) return true;
-        return Promise.resolve(lib.updateLibrary({ libraryItems: missing, merge: true, defaultStatus: 'unpublished', openLibraryMenu: !!force }))
-          .then(function () { return true; });
+        if (!missing.length && !outdated.length) return true;
+        // Ältere Versionen dieser Elemente (anderes Design/Bezeichnung) durch die aktuellen ersetzen,
+        // alle anderen Bibliothekseinträge bleiben unverändert
+        var opts = outdated.length
+          ? { libraryItems: items.filter(function (x) { return outdated.indexOf(x) < 0; }).concat(missing), merge: false }
+          : { libraryItems: missing, merge: true };
+        opts.defaultStatus = 'unpublished';
+        opts.openLibraryMenu = !!force;
+        return Promise.resolve(lib.updateLibrary(opts)).then(function () { return true; });
       }).catch(function () { return false; });
     }
 
@@ -1936,7 +1964,7 @@
       '.item[data-kind=hypothesis]{--accent:#7048e8;--tint:#f3f0ff}',
       '.dark .item[data-kind=question]{--accent:#20c997;--tint:rgba(32,201,151,.14)}',
       '.dark .item[data-kind=hypothesis]{--accent:#9775fa;--tint:rgba(151,117,250,.16)}',
-      '.lbl{font-size:calc(var(--fs) * .78);font-weight:700;color:#fff;background:var(--accent);line-height:1.2;padding:3px 9px;border-radius:6px 6px 0 0}',
+      '.lbl{font-size:calc(var(--fs) * .9);font-weight:700;color:#fff;background:var(--accent);line-height:1.2;padding:3px 9px;border-radius:6px 6px 0 0}',
       '.dark .lbl{color:#121212}',
       '.txt{align-self:stretch;font-size:var(--fs);line-height:1.35;overflow-wrap:anywhere;background:var(--tint);border:1.5px solid var(--accent);border-radius:0 8px 8px 8px;padding:6px 9px}',
       '.lehr .item{cursor:pointer}',
@@ -1957,10 +1985,10 @@
 
     var HTML = '' +
       '<div class="wrap vars">' +
-      '  <div class="card" role="note" aria-label="Fragestellung und Hypothese">' +
+      '  <div class="card" role="note" aria-label="' + LABEL_QUESTION + ' und ' + LABEL_HYPOTHESIS + '">' +
       '    <button class="icon tog" data-act="collapse" title="Einklappen">' + ICON_CHEVRON_UP + '</button>' +
-      '    <div class="item" data-kind="question" hidden><div class="lbl">Fragestellung</div><div class="txt"></div></div>' +
-      '    <div class="item" data-kind="hypothesis" hidden><div class="lbl">Hypothese</div><div class="txt"></div></div>' +
+      '    <div class="item" data-kind="question" hidden><div class="lbl">' + LABEL_QUESTION + '</div><div class="txt"></div></div>' +
+      '    <div class="item" data-kind="hypothesis" hidden><div class="lbl">' + LABEL_HYPOTHESIS + '</div><div class="txt"></div></div>' +
       '  </div>' +
       '  <button class="pill" data-act="expand" title="Ausklappen"><span class="ptext"></span>' + ICON_CHEVRON_DOWN + '</button>' +
       '</div>';

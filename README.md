@@ -5,7 +5,7 @@ Einsatz als digitale Tafel im Unterricht:
 
 - **Timer:** verschiebbares Overlay mit Countdown und Stoppuhr
 - **Stundenuhr:** Restzeit der Unterrichtsstunde klein in der Leiste, für Einzel- und Doppelstunden, nur für Lehrende sichtbar
-- **Fragestellung und Hypothese:** Textfelder auf der Tafel, deren Inhalt dauerhaft oben links eingeblendet wird, auch in der Lernendenansicht
+- **Leitfrage und Hypothese:** Textfelder auf der Tafel, deren Inhalt dauerhaft oben links eingeblendet wird, auch in der Lernendenansicht
 - **Präsentationsmodus:** getrennte **Lehrendenansicht** (dein Bildschirm) und **Lernendenansicht** (Beamer).
   Die Tafel lässt sich für Lernende einfrieren, um unbemerkt vorzubereiten, und die Ansicht lässt sich wahlweise spiegeln.
 
@@ -71,28 +71,28 @@ Teilnehmern einer gemeinsamen Whiteboard-Sitzung synchronisiert und nicht in der
 
 ---
 
-## Fragestellung und Hypothese
+## Leitfrage und Hypothese
 
-Die Fragestellung (und auf Wunsch die Hypothese) der Stunde bleibt dauerhaft oben links sichtbar, auch wenn die
+Die Leitfrage (und auf Wunsch die Hypothese) der Stunde bleibt dauerhaft oben links sichtbar, auch wenn die
 Tafel gerade an einer ganz anderen Stelle steht. Die Quelle ist ein normales Textfeld auf der Tafel: Was du dort
 hineintippst, erscheint sofort im Overlay.
 
 <p>
-  <img src="docs/images/question-element.png" alt="Element Fragestellung auf der Tafel" width="420">
-  <img src="docs/images/question-lernende.png" alt="Fragestellung und Hypothese in der Lernendenansicht" width="380">
+  <img src="docs/images/question-element.png" alt="Element Leitfrage auf der Tafel" width="420">
+  <img src="docs/images/question-lernende.png" alt="Leitfrage und Hypothese in der Lernendenansicht" width="380">
 </p>
 
 **Element auf die Tafel bringen** (eine der Möglichkeiten):
 
-- **Aus der Excalidraw-Bibliothek:** Das Plugin legt die Elemente „Fragestellung“ und „Hypothese“ beim ersten
+- **Aus der Excalidraw-Bibliothek:** Das Plugin legt die Elemente „Leitfrage“ und „Hypothese“ beim ersten
   Start automatisch in deine Bibliothek. Von dort ziehst du sie wie jedes andere Bibliothekselement auf die Tafel.
-- **Über das Präsentationspanel:** Präsentations-Symbol in der Leiste, dann **„Fragestellung einfügen“** bzw.
+- **Über das Präsentationspanel:** Präsentations-Symbol in der Leiste, dann **„Leitfrage einfügen“** bzw.
   **„Hypothese einfügen“**. Das Element erscheint im sichtbaren Bereich der Tafel.
-- **Per Datei:** `library/fragestellung-hypothese.excalidrawlib` (liegt auch jedem Release bei) über das
+- **Per Datei:** `library/leitfrage-hypothese.excalidrawlib` (liegt auch jedem Release bei) über das
   Bibliotheks-Menü von Excalidraw importieren. Fehlen die Elemente in der Bibliothek, holt der Link
   **„Zur Excalidraw-Bibliothek hinzufügen“** im Präsentationspanel sie zurück.
 
-**Aufbau und Bedienung:** Jedes Element besteht aus einem farbigen Reiter mit der Überschrift („Fragestellung“
+**Aufbau und Bedienung:** Jedes Element besteht aus einem farbigen Reiter mit der Überschrift („Leitfrage“
 in Petrol auf Mint, „Hypothese“ in Violett) und dem Kasten darunter. Doppelklick in den Kasten und den Platzhalter
 „…“ durch den eigenen Text ersetzen. Reiter und Kasten sind gruppiert und lassen sich gemeinsam verschieben.
 
@@ -106,11 +106,14 @@ in Petrol auf Mint, „Hypothese“ in Violett) und dem Kasten darunter. Doppelk
 - Ist die Tafel für Lernende eingefroren, bleibt auch das Overlay dort auf dem Stand vom Einfrieren.
 
 Da die Elemente Teil der Tafel sind, werden sie mit der Datei gespeichert und für alle synchronisiert. Öffnest du
-die Tafel später wieder, ist auch das Overlay wieder da. Liegen versehentlich mehrere Fragestellungen auf der Tafel,
+die Tafel später wieder, ist auch das Overlay wieder da. Liegen versehentlich mehrere Leitfragen auf der Tafel,
 zeigt das Overlay die zuletzt bearbeitete.
 
+Die Bezeichnungen stehen oben im Skript und lassen sich ändern, z. B. auf „Fragestellung“
+(siehe [Anpassen](#anpassen)). Bereits auf Tafeln liegende Elemente werden danach weiterhin erkannt.
+
 Erkannt werden die Elemente an einer unsichtbaren Markierung. Fehlt sie, zum Beispiel bei einem selbst gebauten
-Textfeld, genügt der Textanfang „Fragestellung:“ bzw. „Hypothese:“.
+Textfeld, genügt der Textanfang „Leitfrage:“ (oder „Fragestellung:“) bzw. „Hypothese:“, jeweils mit Doppelpunkt.
 
 ---
 
@@ -243,7 +246,7 @@ Es gibt drei Wege, das Skript einzubinden:
 | `CHANGELOG.md` | Änderungen je Version (Quelle für die Release-Texte) |
 | `.github/workflows/release.yml` | Erstellt automatisch Releases |
 | `docs/images/` | Screenshots für diese Anleitung |
-| `library/fragestellung-hypothese.excalidrawlib` | Excalidraw-Bibliothek mit den Elementen „Fragestellung“ und „Hypothese“ |
+| `library/leitfrage-hypothese.excalidrawlib` | Excalidraw-Bibliothek mit den Elementen „Leitfrage“ und „Hypothese“ |
 
 ---
 
@@ -525,9 +528,13 @@ var LESSON_MINUTES = 45;          // Länge einer Unterrichtsstunde
 var LESSON_BREAK_MINUTES = 5;     // Pause innerhalb einer Doppelstunde (0 = keine)
 var LESSON_WARN_MINUTES = 5;      // ab dieser Restzeit wird die Stundenuhr orange
 var LESSON_AUTOHIDE_MINUTES = 30; // so lange nach Stundenende verschwindet die Anzeige
+
+var LABEL_QUESTION = 'Leitfrage';     // Bezeichnung des ersten Tafel-Elements, z. B. 'Fragestellung'
+var LABEL_HYPOTHESIS = 'Hypothese';   // Bezeichnung des zweiten Tafel-Elements
 ```
 
-Wer das Plugin für eine ganze Schule installiert, setzt hier einmal die dort üblichen Stunden- und Pausenlängen.
+Wer das Plugin für eine ganze Schule installiert, setzt hier einmal die dort üblichen Stunden- und Pausenlängen
+und Bezeichnungen.
 Sie gelten dann für alle Lehrkräfte, ohne dass jemand etwas einstellen muss.
 
 Nach einer Änderung die Versionsnummer in der Zeile `// @version` erhöhen und `./install.sh update <container>`

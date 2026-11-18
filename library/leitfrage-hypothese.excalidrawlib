@@ -4,10 +4,10 @@
   "source": "https://github.com/berlinstold/seaf-excalidraw-teacher-tools",
   "libraryItems": [
     {
-      "id": "sf-teacher-tools-fragestellung-v2",
+      "id": "sf-teacher-tools-question-v3",
       "status": "unpublished",
-      "created": 1763500000000,
-      "name": "Fragestellung",
+      "created": 1763510000000,
+      "name": "Leitfrage",
       "elements": [
         {
           "angle": 0,
@@ -16,18 +16,18 @@
           "roughness": 1,
           "opacity": 100,
           "groupIds": [
-            "ujzde8gxd6ncf10epf91"
+            "29326ml64lg2tjf8cz2k"
           ],
           "frameId": null,
           "version": 1,
           "isDeleted": false,
-          "updated": 1763500000000,
+          "updated": 1763510000000,
           "link": null,
           "locked": false,
-          "id": "5v2seh60kvj50ce9uvw5",
+          "id": "d4yz0emrvftva0hipgad",
           "type": "rectangle",
           "x": 0,
-          "y": 33,
+          "y": 45,
           "width": 520,
           "height": 92,
           "strokeColor": "#099268",
@@ -36,12 +36,12 @@
           "roundness": {
             "type": 3
           },
-          "seed": 1649767777,
-          "versionNonce": 617255373,
+          "seed": 402239492,
+          "versionNonce": 846698336,
           "boundElements": [
             {
               "type": "text",
-              "id": "3efr4edt2sywb3wkh5dn"
+              "id": "35l9m26mi0yhz0nartbn"
             }
           ],
           "customData": {
@@ -55,26 +55,26 @@
           "roughness": 1,
           "opacity": 100,
           "groupIds": [
-            "ujzde8gxd6ncf10epf91"
+            "29326ml64lg2tjf8cz2k"
           ],
           "frameId": null,
           "version": 1,
           "isDeleted": false,
-          "updated": 1763500000000,
+          "updated": 1763510000000,
           "link": null,
           "locked": false,
-          "id": "3efr4edt2sywb3wkh5dn",
+          "id": "35l9m26mi0yhz0nartbn",
           "type": "text",
           "x": 252,
-          "y": 66,
+          "y": 78,
           "width": 16,
           "height": 25,
           "strokeColor": "#1e1e1e",
           "backgroundColor": "transparent",
           "fillStyle": "solid",
           "roundness": null,
-          "seed": 277756008,
-          "versionNonce": 1585623284,
+          "seed": 2138540917,
+          "versionNonce": 1834760427,
           "boundElements": null,
           "text": "…",
           "originalText": "…",
@@ -82,7 +82,7 @@
           "fontFamily": 1,
           "textAlign": "center",
           "verticalAlign": "middle",
-          "containerId": "5v2seh60kvj50ce9uvw5",
+          "containerId": "d4yz0emrvftva0hipgad",
           "lineHeight": 1.25,
           "autoResize": true,
           "customData": {
@@ -96,32 +96,32 @@
           "roughness": 1,
           "opacity": 100,
           "groupIds": [
-            "ujzde8gxd6ncf10epf91"
+            "29326ml64lg2tjf8cz2k"
           ],
           "frameId": null,
           "version": 1,
           "isDeleted": false,
-          "updated": 1763500000000,
+          "updated": 1763510000000,
           "link": null,
           "locked": false,
-          "id": "dhodzdoc9is0j8ht9lgm",
+          "id": "a7edcmpb3u2m7os5af3r",
           "type": "rectangle",
           "x": 0,
           "y": 0,
-          "width": 161,
-          "height": 34,
+          "width": 170,
+          "height": 46,
           "strokeColor": "#099268",
           "backgroundColor": "#099268",
           "fillStyle": "solid",
           "roundness": {
             "type": 3
           },
-          "seed": 531748802,
-          "versionNonce": 854478761,
+          "seed": 1292824872,
+          "versionNonce": 1378331574,
           "boundElements": [
             {
               "type": "text",
-              "id": "xg9edn581u33xtplpft7"
+              "id": "09fquo6sbegzgsyebann"
             }
           ],
           "customData": {
@@ -135,34 +135,34 @@
           "roughness": 1,
           "opacity": 100,
           "groupIds": [
-            "ujzde8gxd6ncf10epf91"
+            "29326ml64lg2tjf8cz2k"
           ],
           "frameId": null,
           "version": 1,
           "isDeleted": false,
-          "updated": 1763500000000,
+          "updated": 1763510000000,
           "link": null,
           "locked": false,
-          "id": "xg9edn581u33xtplpft7",
+          "id": "09fquo6sbegzgsyebann",
           "type": "text",
-          "x": 24,
-          "y": 7,
-          "width": 114,
-          "height": 20,
+          "x": 26,
+          "y": 8,
+          "width": 119,
+          "height": 30,
           "strokeColor": "#ffffff",
           "backgroundColor": "transparent",
           "fillStyle": "solid",
           "roundness": null,
-          "seed": 839558095,
-          "versionNonce": 1968847850,
+          "seed": 1239011821,
+          "versionNonce": 215462959,
           "boundElements": null,
-          "text": "Fragestellung",
-          "originalText": "Fragestellung",
-          "fontSize": 16,
+          "text": "Leitfrage",
+          "originalText": "Leitfrage",
+          "fontSize": 24,
           "fontFamily": 1,
           "textAlign": "center",
           "verticalAlign": "middle",
-          "containerId": "dhodzdoc9is0j8ht9lgm",
+          "containerId": "a7edcmpb3u2m7os5af3r",
           "lineHeight": 1.25,
           "autoResize": true,
           "customData": {
@@ -172,9 +172,9 @@
       ]
     },
     {
-      "id": "sf-teacher-tools-hypothese-v2",
+      "id": "sf-teacher-tools-hypothesis-v3",
       "status": "unpublished",
-      "created": 1763500000000,
+      "created": 1763510000000,
       "name": "Hypothese",
       "elements": [
         {
@@ -184,18 +184,18 @@
           "roughness": 1,
           "opacity": 100,
           "groupIds": [
-            "5fk2z9ri19r0wyojfljo"
+            "cjn2qavsyeefnpaxx3i4"
           ],
           "frameId": null,
           "version": 1,
           "isDeleted": false,
-          "updated": 1763500000000,
+          "updated": 1763510000000,
           "link": null,
           "locked": false,
-          "id": "enyjqwx4hh5344tfjgvq",
+          "id": "r02pdclsx7ifxi2v7icb",
           "type": "rectangle",
           "x": 0,
-          "y": 33,
+          "y": 45,
           "width": 520,
           "height": 92,
           "strokeColor": "#7048e8",
@@ -204,12 +204,12 @@
           "roundness": {
             "type": 3
           },
-          "seed": 1163006535,
-          "versionNonce": 1673007633,
+          "seed": 182378959,
+          "versionNonce": 1471339731,
           "boundElements": [
             {
               "type": "text",
-              "id": "4k7bn7xj8b7tfq7xkwo8"
+              "id": "4wtcbe4etuiee28xcivw"
             }
           ],
           "customData": {
@@ -223,26 +223,26 @@
           "roughness": 1,
           "opacity": 100,
           "groupIds": [
-            "5fk2z9ri19r0wyojfljo"
+            "cjn2qavsyeefnpaxx3i4"
           ],
           "frameId": null,
           "version": 1,
           "isDeleted": false,
-          "updated": 1763500000000,
+          "updated": 1763510000000,
           "link": null,
           "locked": false,
-          "id": "4k7bn7xj8b7tfq7xkwo8",
+          "id": "4wtcbe4etuiee28xcivw",
           "type": "text",
           "x": 252,
-          "y": 66,
+          "y": 78,
           "width": 16,
           "height": 25,
           "strokeColor": "#1e1e1e",
           "backgroundColor": "transparent",
           "fillStyle": "solid",
           "roundness": null,
-          "seed": 1079533638,
-          "versionNonce": 707950178,
+          "seed": 1016357713,
+          "versionNonce": 1934530462,
           "boundElements": null,
           "text": "…",
           "originalText": "…",
@@ -250,7 +250,7 @@
           "fontFamily": 1,
           "textAlign": "center",
           "verticalAlign": "middle",
-          "containerId": "enyjqwx4hh5344tfjgvq",
+          "containerId": "r02pdclsx7ifxi2v7icb",
           "lineHeight": 1.25,
           "autoResize": true,
           "customData": {
@@ -264,32 +264,32 @@
           "roughness": 1,
           "opacity": 100,
           "groupIds": [
-            "5fk2z9ri19r0wyojfljo"
+            "cjn2qavsyeefnpaxx3i4"
           ],
           "frameId": null,
           "version": 1,
           "isDeleted": false,
-          "updated": 1763500000000,
+          "updated": 1763510000000,
           "link": null,
           "locked": false,
-          "id": "oa5lqsaj08xui6d39zzz",
+          "id": "iyljtopmk9my4f0dggc6",
           "type": "rectangle",
           "x": 0,
           "y": 0,
-          "width": 121,
-          "height": 34,
+          "width": 170,
+          "height": 46,
           "strokeColor": "#7048e8",
           "backgroundColor": "#7048e8",
           "fillStyle": "solid",
           "roundness": {
             "type": 3
           },
-          "seed": 1366748639,
-          "versionNonce": 478978338,
+          "seed": 166793565,
+          "versionNonce": 1870675710,
           "boundElements": [
             {
               "type": "text",
-              "id": "zg4zdmen2khvdgaj8gxb"
+              "id": "qpzq05s7leio49ernnbe"
             }
           ],
           "customData": {
@@ -303,34 +303,34 @@
           "roughness": 1,
           "opacity": 100,
           "groupIds": [
-            "5fk2z9ri19r0wyojfljo"
+            "cjn2qavsyeefnpaxx3i4"
           ],
           "frameId": null,
           "version": 1,
           "isDeleted": false,
-          "updated": 1763500000000,
+          "updated": 1763510000000,
           "link": null,
           "locked": false,
-          "id": "zg4zdmen2khvdgaj8gxb",
+          "id": "qpzq05s7leio49ernnbe",
           "type": "text",
-          "x": 21,
-          "y": 7,
-          "width": 79,
-          "height": 20,
+          "x": 26,
+          "y": 8,
+          "width": 119,
+          "height": 30,
           "strokeColor": "#ffffff",
           "backgroundColor": "transparent",
           "fillStyle": "solid",
           "roundness": null,
-          "seed": 1316897578,
-          "versionNonce": 1742707121,
+          "seed": 1841028242,
+          "versionNonce": 895829542,
           "boundElements": null,
           "text": "Hypothese",
           "originalText": "Hypothese",
-          "fontSize": 16,
+          "fontSize": 24,
           "fontFamily": 1,
           "textAlign": "center",
           "verticalAlign": "middle",
-          "containerId": "oa5lqsaj08xui6d39zzz",
+          "containerId": "iyljtopmk9my4f0dggc6",
           "lineHeight": 1.25,
           "autoResize": true,
           "customData": {
