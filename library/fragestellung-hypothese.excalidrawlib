@@ -4,7 +4,7 @@
   "source": "https://github.com/berlinstold/seaf-excalidraw-teacher-tools",
   "libraryItems": [
     {
-      "id": "sf-teacher-tools-fragestellung",
+      "id": "sf-teacher-tools-fragestellung-v2",
       "status": "unpublished",
       "created": 1763500000000,
       "name": "Fragestellung",
@@ -15,31 +15,33 @@
           "strokeStyle": "solid",
           "roughness": 1,
           "opacity": 100,
-          "groupIds": [],
+          "groupIds": [
+            "ujzde8gxd6ncf10epf91"
+          ],
           "frameId": null,
           "version": 1,
           "isDeleted": false,
           "updated": 1763500000000,
           "link": null,
           "locked": false,
-          "id": "hbrpoig8f1cbfno6b9m8",
+          "id": "5v2seh60kvj50ce9uvw5",
           "type": "rectangle",
           "x": 0,
-          "y": 0,
-          "width": 560,
-          "height": 96,
-          "strokeColor": "#1971c2",
-          "backgroundColor": "#e7f5ff",
+          "y": 33,
+          "width": 520,
+          "height": 92,
+          "strokeColor": "#099268",
+          "backgroundColor": "#e6fcf5",
           "fillStyle": "solid",
           "roundness": {
             "type": 3
           },
-          "seed": 1567087081,
-          "versionNonce": 986607412,
+          "seed": 1649767777,
+          "versionNonce": 617255373,
           "boundElements": [
             {
               "type": "text",
-              "id": "0o2rak1vrjnvgfygwwqc"
+              "id": "3efr4edt2sywb3wkh5dn"
             }
           ],
           "customData": {
@@ -52,43 +54,125 @@
           "strokeStyle": "solid",
           "roughness": 1,
           "opacity": 100,
-          "groupIds": [],
+          "groupIds": [
+            "ujzde8gxd6ncf10epf91"
+          ],
           "frameId": null,
           "version": 1,
           "isDeleted": false,
           "updated": 1763500000000,
           "link": null,
           "locked": false,
-          "id": "0o2rak1vrjnvgfygwwqc",
+          "id": "3efr4edt2sywb3wkh5dn",
           "type": "text",
-          "x": 192,
-          "y": 36,
-          "width": 176,
+          "x": 252,
+          "y": 66,
+          "width": 16,
           "height": 25,
           "strokeColor": "#1e1e1e",
           "backgroundColor": "transparent",
           "fillStyle": "solid",
           "roundness": null,
-          "seed": 1151541059,
-          "versionNonce": 268062141,
+          "seed": 277756008,
+          "versionNonce": 1585623284,
           "boundElements": null,
-          "text": "Fragestellung: …",
-          "originalText": "Fragestellung: …",
+          "text": "…",
+          "originalText": "…",
           "fontSize": 20,
           "fontFamily": 1,
           "textAlign": "center",
           "verticalAlign": "middle",
-          "containerId": "hbrpoig8f1cbfno6b9m8",
+          "containerId": "5v2seh60kvj50ce9uvw5",
           "lineHeight": 1.25,
           "autoResize": true,
           "customData": {
             "sfTeacherTools": "question"
           }
+        },
+        {
+          "angle": 0,
+          "strokeWidth": 2,
+          "strokeStyle": "solid",
+          "roughness": 1,
+          "opacity": 100,
+          "groupIds": [
+            "ujzde8gxd6ncf10epf91"
+          ],
+          "frameId": null,
+          "version": 1,
+          "isDeleted": false,
+          "updated": 1763500000000,
+          "link": null,
+          "locked": false,
+          "id": "dhodzdoc9is0j8ht9lgm",
+          "type": "rectangle",
+          "x": 0,
+          "y": 0,
+          "width": 161,
+          "height": 34,
+          "strokeColor": "#099268",
+          "backgroundColor": "#099268",
+          "fillStyle": "solid",
+          "roundness": {
+            "type": 3
+          },
+          "seed": 531748802,
+          "versionNonce": 854478761,
+          "boundElements": [
+            {
+              "type": "text",
+              "id": "xg9edn581u33xtplpft7"
+            }
+          ],
+          "customData": {
+            "sfTeacherTools": "question-label"
+          }
+        },
+        {
+          "angle": 0,
+          "strokeWidth": 2,
+          "strokeStyle": "solid",
+          "roughness": 1,
+          "opacity": 100,
+          "groupIds": [
+            "ujzde8gxd6ncf10epf91"
+          ],
+          "frameId": null,
+          "version": 1,
+          "isDeleted": false,
+          "updated": 1763500000000,
+          "link": null,
+          "locked": false,
+          "id": "xg9edn581u33xtplpft7",
+          "type": "text",
+          "x": 24,
+          "y": 7,
+          "width": 114,
+          "height": 20,
+          "strokeColor": "#ffffff",
+          "backgroundColor": "transparent",
+          "fillStyle": "solid",
+          "roundness": null,
+          "seed": 839558095,
+          "versionNonce": 1968847850,
+          "boundElements": null,
+          "text": "Fragestellung",
+          "originalText": "Fragestellung",
+          "fontSize": 16,
+          "fontFamily": 1,
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "containerId": "dhodzdoc9is0j8ht9lgm",
+          "lineHeight": 1.25,
+          "autoResize": true,
+          "customData": {
+            "sfTeacherTools": "question-label"
+          }
         }
       ]
     },
     {
-      "id": "sf-teacher-tools-hypothese",
+      "id": "sf-teacher-tools-hypothese-v2",
       "status": "unpublished",
       "created": 1763500000000,
       "name": "Hypothese",
@@ -99,31 +183,33 @@
           "strokeStyle": "solid",
           "roughness": 1,
           "opacity": 100,
-          "groupIds": [],
+          "groupIds": [
+            "5fk2z9ri19r0wyojfljo"
+          ],
           "frameId": null,
           "version": 1,
           "isDeleted": false,
           "updated": 1763500000000,
           "link": null,
           "locked": false,
-          "id": "yf9sxmecosfogyr3xkxw",
+          "id": "enyjqwx4hh5344tfjgvq",
           "type": "rectangle",
           "x": 0,
-          "y": 0,
-          "width": 560,
-          "height": 96,
-          "strokeColor": "#2f9e44",
-          "backgroundColor": "#ebfbee",
+          "y": 33,
+          "width": 520,
+          "height": 92,
+          "strokeColor": "#7048e8",
+          "backgroundColor": "#f3f0ff",
           "fillStyle": "solid",
           "roundness": {
             "type": 3
           },
-          "seed": 453082199,
-          "versionNonce": 1960944881,
+          "seed": 1163006535,
+          "versionNonce": 1673007633,
           "boundElements": [
             {
               "type": "text",
-              "id": "nrek8pk3yr9oudocuzre"
+              "id": "4k7bn7xj8b7tfq7xkwo8"
             }
           ],
           "customData": {
@@ -136,37 +222,119 @@
           "strokeStyle": "solid",
           "roughness": 1,
           "opacity": 100,
-          "groupIds": [],
+          "groupIds": [
+            "5fk2z9ri19r0wyojfljo"
+          ],
           "frameId": null,
           "version": 1,
           "isDeleted": false,
           "updated": 1763500000000,
           "link": null,
           "locked": false,
-          "id": "nrek8pk3yr9oudocuzre",
+          "id": "4k7bn7xj8b7tfq7xkwo8",
           "type": "text",
-          "x": 214,
-          "y": 36,
-          "width": 132,
+          "x": 252,
+          "y": 66,
+          "width": 16,
           "height": 25,
           "strokeColor": "#1e1e1e",
           "backgroundColor": "transparent",
           "fillStyle": "solid",
           "roundness": null,
-          "seed": 2024883187,
-          "versionNonce": 1218009888,
+          "seed": 1079533638,
+          "versionNonce": 707950178,
           "boundElements": null,
-          "text": "Hypothese: …",
-          "originalText": "Hypothese: …",
+          "text": "…",
+          "originalText": "…",
           "fontSize": 20,
           "fontFamily": 1,
           "textAlign": "center",
           "verticalAlign": "middle",
-          "containerId": "yf9sxmecosfogyr3xkxw",
+          "containerId": "enyjqwx4hh5344tfjgvq",
           "lineHeight": 1.25,
           "autoResize": true,
           "customData": {
             "sfTeacherTools": "hypothesis"
+          }
+        },
+        {
+          "angle": 0,
+          "strokeWidth": 2,
+          "strokeStyle": "solid",
+          "roughness": 1,
+          "opacity": 100,
+          "groupIds": [
+            "5fk2z9ri19r0wyojfljo"
+          ],
+          "frameId": null,
+          "version": 1,
+          "isDeleted": false,
+          "updated": 1763500000000,
+          "link": null,
+          "locked": false,
+          "id": "oa5lqsaj08xui6d39zzz",
+          "type": "rectangle",
+          "x": 0,
+          "y": 0,
+          "width": 121,
+          "height": 34,
+          "strokeColor": "#7048e8",
+          "backgroundColor": "#7048e8",
+          "fillStyle": "solid",
+          "roundness": {
+            "type": 3
+          },
+          "seed": 1366748639,
+          "versionNonce": 478978338,
+          "boundElements": [
+            {
+              "type": "text",
+              "id": "zg4zdmen2khvdgaj8gxb"
+            }
+          ],
+          "customData": {
+            "sfTeacherTools": "hypothesis-label"
+          }
+        },
+        {
+          "angle": 0,
+          "strokeWidth": 2,
+          "strokeStyle": "solid",
+          "roughness": 1,
+          "opacity": 100,
+          "groupIds": [
+            "5fk2z9ri19r0wyojfljo"
+          ],
+          "frameId": null,
+          "version": 1,
+          "isDeleted": false,
+          "updated": 1763500000000,
+          "link": null,
+          "locked": false,
+          "id": "zg4zdmen2khvdgaj8gxb",
+          "type": "text",
+          "x": 21,
+          "y": 7,
+          "width": 79,
+          "height": 20,
+          "strokeColor": "#ffffff",
+          "backgroundColor": "transparent",
+          "fillStyle": "solid",
+          "roundness": null,
+          "seed": 1316897578,
+          "versionNonce": 1742707121,
+          "boundElements": null,
+          "text": "Hypothese",
+          "originalText": "Hypothese",
+          "fontSize": 16,
+          "fontFamily": 1,
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "containerId": "oa5lqsaj08xui6d39zzz",
+          "lineHeight": 1.25,
+          "autoResize": true,
+          "customData": {
+            "sfTeacherTools": "hypothesis-label"
           }
         }
       ]

@@ -4,6 +4,8 @@
 
 - Neu: Fragestellung und Hypothese
   - Markierte Textfelder auf der Tafel; ihr Text erscheint dauerhaft oben links, auch in der Lernendenansicht
+  - Element-Design: farbiger Reiter mit Überschrift über dem Eingabekasten (Fragestellung Mint `#e6fcf5`, Hypothese Violett `#f3f0ff`)
+  - Overlay im gleichen Stil, schmal gehalten, in der Lernendenansicht mit angepasster Schriftgröße
   - Overlay nur, wenn ein Element mit Text vorhanden ist und es nicht selbst vollständig sichtbar ist
   - Elemente werden automatisch in die Excalidraw-Bibliothek gelegt, lassen sich im Präsentationspanel einfügen und
     liegen als `library/fragestellung-hypothese.excalidrawlib` bei

@@ -1730,14 +1730,15 @@
   // ===========================================================================
   var Question = (function () {
     var KINDS = {
-      question: { label: 'Fragestellung', prefix: /^\s*fragestellung\s*:?\s*/i, stroke: '#1971c2', bg: '#e7f5ff', accent: '#1971c2' },
-      hypothesis: { label: 'Hypothese', prefix: /^\s*hypothese\s*:?\s*/i, stroke: '#2f9e44', bg: '#ebfbee', accent: '#2f9e44' }
+      // Fragestellung: Mint (#e6fcf5) mit Petrol-Rahmen; Hypothese: zartes Violett als Kontrast
+      question: { label: 'Fragestellung', prefix: /^\s*fragestellung\s*:?\s*/i, stroke: '#099268', bg: '#e6fcf5' },
+      hypothesis: { label: 'Hypothese', prefix: /^\s*hypothese\s*:?\s*/i, stroke: '#7048e8', bg: '#f3f0ff' }
     };
     var ORDER = ['question', 'hypothesis'];
     var MARK = 'sfTeacherTools';
     var COLLAPSE_KEY = 'sf-excalidraw-question-collapsed:v1';
-    var LIB_FLAG_KEY = 'sf-excalidraw-question-lib:v1';
-    var LIB_IDS = { question: 'sf-teacher-tools-fragestellung', hypothesis: 'sf-teacher-tools-hypothese' };
+    var LIB_FLAG_KEY = 'sf-excalidraw-question-lib:v2';
+    var LIB_IDS = { question: 'sf-teacher-tools-fragestellung-v2', hypothesis: 'sf-teacher-tools-hypothese-v2' };
 
     var ui = null;
     var poll = null;
@@ -1763,6 +1764,11 @@
       return KINDS[k] ? k : null;
     }
 
+    function isForeignMark(el) {
+      var k = el && el.customData && el.customData[MARK];
+      return !!k && !KINDS[k];
+    }
+
     function prefixKind(text) {
       for (var i = 0; i < ORDER.length; i++) if (KINDS[ORDER[i]].prefix.test(text || '')) return ORDER[i];
       return null;
@@ -1785,6 +1791,8 @@
         if (t.type !== 'text' || t.isDeleted) return;
         var container = t.containerId ? byId[t.containerId] : null;
         var raw = t.originalText != null ? t.originalText : t.text;
+        // Überschriften-Reiter ("question-label") und andere eigene Markierungen überspringen
+        if (isForeignMark(t) || isForeignMark(container)) return;
         var kind = markOf(t) || markOf(container) || prefixKind(raw);
         if (!kind) return;
         var body = bodyOf(kind, raw);
@@ -1815,31 +1823,55 @@
     function rid() { return Math.random().toString(36).slice(2, 12) + Math.random().toString(36).slice(2, 12); }
     function rnd() { return Math.floor(Math.random() * 2147483647); }
 
+    // Aufbau: farbiger Reiter mit der Überschrift, darunter der Kasten zum Eintippen.
+    // Beide liegen in einer Gruppe und bewegen sich gemeinsam.
+    //   ┌───────────────┐
+    //   │ Fragestellung │
+    //   ├───────────────┴──────────────────────────┐
+    //   │                    …                     │
+    //   └──────────────────────────────────────────┘
     function makeElements(kind, cx, cy, fontFamily) {
       var k = KINDS[kind];
-      var W = 560, H = 96, fs = 20;
-      var text = k.label + ': …';
-      var tw = Math.round(text.length * fs * 0.55), th = Math.round(fs * 1.25);
-      var rectId = rid(), textId = rid(), t = now();
+      var W = 520, H = 92, fs = 20;           // Eingabekasten
+      var lfs = 16, TH = 34;                   // Reiter
+      var TW = Math.round(k.label.length * lfs * 0.62 + 32);
+      var x0 = Math.round(cx - W / 2), yBody = Math.round(cy - H / 2 + TH / 2), yTab = yBody - TH + 1;
+      var t = now(), gid = rid();
+      var ids = { tab: rid(), tabText: rid(), body: rid(), bodyText: rid() };
+      function mark(v) { var c = {}; c[MARK] = v; return c; }
       var base = {
-        angle: 0, strokeWidth: 2, strokeStyle: 'solid', roughness: 1, opacity: 100, groupIds: [], frameId: null,
+        angle: 0, strokeWidth: 2, strokeStyle: 'solid', roughness: 1, opacity: 100, groupIds: [gid], frameId: null,
         version: 1, isDeleted: false, updated: t, link: null, locked: false
       };
-      var rect = Object.assign({}, base, {
-        id: rectId, type: 'rectangle', x: Math.round(cx - W / 2), y: Math.round(cy - H / 2), width: W, height: H,
+      function textEl(id, containerId, text, size, color, x, y, w, h, m) {
+        return Object.assign({}, base, {
+          id: id, type: 'text', x: x, y: y, width: w, height: h,
+          strokeColor: color, backgroundColor: 'transparent', fillStyle: 'solid', roundness: null,
+          seed: rnd(), versionNonce: rnd(), boundElements: null,
+          text: text, originalText: text, fontSize: size, fontFamily: fontFamily || 1, textAlign: 'center',
+          verticalAlign: 'middle', containerId: containerId, lineHeight: 1.25, autoResize: true, customData: m
+        });
+      }
+      var tab = Object.assign({}, base, {
+        id: ids.tab, type: 'rectangle', x: x0, y: yTab, width: TW, height: TH,
+        strokeColor: k.stroke, backgroundColor: k.stroke, fillStyle: 'solid', roundness: { type: 3 },
+        seed: rnd(), versionNonce: rnd(), boundElements: [{ type: 'text', id: ids.tabText }],
+        customData: mark(kind + '-label')
+      });
+      var ltw = Math.round(k.label.length * lfs * 0.55), lth = Math.round(lfs * 1.25);
+      var tabText = textEl(ids.tabText, ids.tab, k.label, lfs, '#ffffff',
+        Math.round(x0 + (TW - ltw) / 2), Math.round(yTab + (TH - lth) / 2), ltw, lth, mark(kind + '-label'));
+      var body = Object.assign({}, base, {
+        id: ids.body, type: 'rectangle', x: x0, y: yBody, width: W, height: H,
         strokeColor: k.stroke, backgroundColor: k.bg, fillStyle: 'solid', roundness: { type: 3 },
-        seed: rnd(), versionNonce: rnd(), boundElements: [{ type: 'text', id: textId }],
-        customData: (function () { var c = {}; c[MARK] = kind; return c; })()
+        seed: rnd(), versionNonce: rnd(), boundElements: [{ type: 'text', id: ids.bodyText }],
+        customData: mark(kind)
       });
-      var txt = Object.assign({}, base, {
-        id: textId, type: 'text', x: Math.round(rect.x + (W - tw) / 2), y: Math.round(rect.y + (H - th) / 2), width: tw, height: th,
-        strokeColor: '#1e1e1e', backgroundColor: 'transparent', fillStyle: 'solid', roundness: null,
-        seed: rnd(), versionNonce: rnd(), boundElements: null,
-        text: text, originalText: text, fontSize: fs, fontFamily: fontFamily || 1, textAlign: 'center',
-        verticalAlign: 'middle', containerId: rectId, lineHeight: 1.25, autoResize: true,
-        customData: (function () { var c = {}; c[MARK] = kind; return c; })()
-      });
-      return [rect, txt];
+      var bth = Math.round(fs * 1.25), btw = Math.round(fs * 0.8);
+      var bodyText = textEl(ids.bodyText, ids.body, '…', fs, '#1e1e1e',
+        Math.round(x0 + (W - btw) / 2), Math.round(yBody + (H - bth) / 2), btw, bth, mark(kind));
+      // Reihenfolge: Kasten zuerst, damit der Reiter seine Oberkante überdeckt
+      return [body, bodyText, tab, tabText];
     }
 
     // Element mitten in den sichtbaren Bereich der Tafel einfügen
@@ -1856,10 +1888,11 @@
         all = typeof app.scene.getElementsIncludingDeleted === 'function'
           ? app.scene.getElementsIncludingDeleted().slice() : (sceneElements(app) || []).slice();
       } catch (e) { return false; }
-      var sel = {}; sel[news[0].id] = true;
+      var sel = {}; news.forEach(function (e) { sel[e.id] = true; });
+      var gsel = {}; gsel[news[0].groupIds[0]] = true;
       app.updateScene({
         elements: all.concat(news),
-        appState: { selectedElementIds: sel },
+        appState: { selectedElementIds: sel, selectedGroupIds: gsel },
         captureUpdate: 'IMMEDIATELY', commitToHistory: true
       });
       return true;
@@ -1894,16 +1927,18 @@
       '.card{font-family:Assistant,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--fg);',
       '  background:var(--bg);border:1px solid var(--border);border-radius:12px;box-shadow:0 4px 18px rgba(0,0,0,.12);',
       '  padding:8px 10px;display:flex;flex-direction:column;gap:8px;max-width:var(--maxw);position:relative}',
-      '.vars{--bg:#fff;--fg:#1b1b1f;--muted:#70707b;--border:#e3e3ea;--btn:#f1f0ff;--maxw:min(36vw,460px);--fs:14px}',
+      '.vars{--bg:#fff;--fg:#1b1b1f;--muted:#70707b;--border:#e3e3ea;--btn:#f1f0ff;--maxw:min(26vw,340px);--fs:13px}',
       '.vars.dark{--bg:#232329;--fg:#e3e3e8;--muted:#a0a0ab;--border:#3a3a44;--btn:#31303b}',
-      '.vars.lern{--maxw:min(44vw,760px);--fs:clamp(18px,1.6vw,32px)}',
-      '.item{border-left:3px solid var(--accent);padding:1px 0 1px 9px}',
-      '.item[data-kind=question]{--accent:#1971c2}',
-      '.item[data-kind=hypothesis]{--accent:#2f9e44}',
-      '.dark .item[data-kind=question]{--accent:#74c0fc}',
-      '.dark .item[data-kind=hypothesis]{--accent:#8ce99a}',
-      '.lbl{font-size:calc(var(--fs) * .78);font-weight:700;color:var(--accent);line-height:1.2}',
-      '.txt{font-size:var(--fs);line-height:1.35;overflow-wrap:anywhere}',
+      '.vars.lern{--maxw:min(30vw,480px);--fs:clamp(14px,1.05vw,20px)}',
+      // Gestaltung wie auf der Tafel: farbiger Reiter mit Überschrift über einem getönten Kasten
+      '.item{display:flex;flex-direction:column;align-items:flex-start}',
+      '.item[data-kind=question]{--accent:#099268;--tint:#e6fcf5}',
+      '.item[data-kind=hypothesis]{--accent:#7048e8;--tint:#f3f0ff}',
+      '.dark .item[data-kind=question]{--accent:#20c997;--tint:rgba(32,201,151,.14)}',
+      '.dark .item[data-kind=hypothesis]{--accent:#9775fa;--tint:rgba(151,117,250,.16)}',
+      '.lbl{font-size:calc(var(--fs) * .78);font-weight:700;color:#fff;background:var(--accent);line-height:1.2;padding:3px 9px;border-radius:6px 6px 0 0}',
+      '.dark .lbl{color:#121212}',
+      '.txt{align-self:stretch;font-size:var(--fs);line-height:1.35;overflow-wrap:anywhere;background:var(--tint);border:1.5px solid var(--accent);border-radius:0 8px 8px 8px;padding:6px 9px}',
       '.lehr .item{cursor:pointer}',
       '.lehr .item:hover .txt{text-decoration:underline;text-decoration-color:var(--border)}',
       '.lehr .card{padding-right:34px}',

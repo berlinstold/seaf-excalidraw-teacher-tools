@@ -77,7 +77,10 @@ Die Fragestellung (und auf Wunsch die Hypothese) der Stunde bleibt dauerhaft obe
 Tafel gerade an einer ganz anderen Stelle steht. Die Quelle ist ein normales Textfeld auf der Tafel: Was du dort
 hineintippst, erscheint sofort im Overlay.
 
-<p><img src="docs/images/question-lernende.png" alt="Fragestellung und Hypothese in der Lernendenansicht" width="560"></p>
+<p>
+  <img src="docs/images/question-element.png" alt="Element Fragestellung auf der Tafel" width="420">
+  <img src="docs/images/question-lernende.png" alt="Fragestellung und Hypothese in der Lernendenansicht" width="380">
+</p>
 
 **Element auf die Tafel bringen** (eine der Möglichkeiten):
 
@@ -89,8 +92,9 @@ hineintippst, erscheint sofort im Overlay.
   Bibliotheks-Menü von Excalidraw importieren. Fehlen die Elemente in der Bibliothek, holt der Link
   **„Zur Excalidraw-Bibliothek hinzufügen“** im Präsentationspanel sie zurück.
 
-**Bedienung:** Doppelklick auf das Element und den Platzhalter „…“ hinter „Fragestellung:“ durch die eigene
-Fragestellung ersetzen. Das Element lässt sich wie jedes andere verschieben, vergrößern und einfärben.
+**Aufbau und Bedienung:** Jedes Element besteht aus einem farbigen Reiter mit der Überschrift („Fragestellung“
+in Petrol auf Mint, „Hypothese“ in Violett) und dem Kasten darunter. Doppelklick in den Kasten und den Platzhalter
+„…“ durch den eigenen Text ersetzen. Reiter und Kasten sind gruppiert und lassen sich gemeinsam verschieben.
 
 **Wann das Overlay erscheint:**
 
