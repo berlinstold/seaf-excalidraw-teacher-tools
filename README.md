@@ -5,6 +5,7 @@ Einsatz als digitale Tafel im Unterricht:
 
 - **Timer:** verschiebbares Overlay mit Countdown und Stoppuhr
 - **Stundenuhr:** Restzeit der Unterrichtsstunde klein in der Leiste, für Einzel- und Doppelstunden, nur für Lehrende sichtbar
+- **Fragestellung und Hypothese:** Textfelder auf der Tafel, deren Inhalt dauerhaft oben links eingeblendet wird, auch in der Lernendenansicht
 - **Präsentationsmodus:** getrennte **Lehrendenansicht** (dein Bildschirm) und **Lernendenansicht** (Beamer).
   Die Tafel lässt sich für Lernende einfrieren, um unbemerkt vorzubereiten, und die Ansicht lässt sich wahlweise spiegeln.
 
@@ -70,6 +71,45 @@ Teilnehmern einer gemeinsamen Whiteboard-Sitzung synchronisiert und nicht in der
 
 ---
 
+## Fragestellung und Hypothese
+
+Die Fragestellung (und auf Wunsch die Hypothese) der Stunde bleibt dauerhaft oben links sichtbar, auch wenn die
+Tafel gerade an einer ganz anderen Stelle steht. Die Quelle ist ein normales Textfeld auf der Tafel: Was du dort
+hineintippst, erscheint sofort im Overlay.
+
+<p><img src="docs/images/question-lernende.png" alt="Fragestellung und Hypothese in der Lernendenansicht" width="560"></p>
+
+**Element auf die Tafel bringen** (eine der Möglichkeiten):
+
+- **Aus der Excalidraw-Bibliothek:** Das Plugin legt die Elemente „Fragestellung“ und „Hypothese“ beim ersten
+  Start automatisch in deine Bibliothek. Von dort ziehst du sie wie jedes andere Bibliothekselement auf die Tafel.
+- **Über das Präsentationspanel:** Präsentations-Symbol in der Leiste, dann **„Fragestellung einfügen“** bzw.
+  **„Hypothese einfügen“**. Das Element erscheint im sichtbaren Bereich der Tafel.
+- **Per Datei:** `library/fragestellung-hypothese.excalidrawlib` (liegt auch jedem Release bei) über das
+  Bibliotheks-Menü von Excalidraw importieren. Fehlen die Elemente in der Bibliothek, holt der Link
+  **„Zur Excalidraw-Bibliothek hinzufügen“** im Präsentationspanel sie zurück.
+
+**Bedienung:** Doppelklick auf das Element und den Platzhalter „…“ hinter „Fragestellung:“ durch die eigene
+Fragestellung ersetzen. Das Element lässt sich wie jedes andere verschieben, vergrößern und einfärben.
+
+**Wann das Overlay erscheint:**
+
+- Nur wenn ein solches Element auf der Tafel liegt und echten Text enthält, nicht den Platzhalter.
+- Nicht, solange das Element selbst vollständig auf dem Bildschirm zu sehen ist. Das vermeidet doppelte Anzeige.
+- In der Lehrendenansicht unter dem Excalidraw-Menü. Ist links das Eigenschaften-Panel von Excalidraw offen,
+  rückt es daneben. Ein Klick auf den Text springt zum Element, der Pfeil klappt das Overlay zu einer kleinen Leiste ein.
+- In der Lernendenansicht ganz oben links, in größerer Schrift und nicht einklappbar.
+- Ist die Tafel für Lernende eingefroren, bleibt auch das Overlay dort auf dem Stand vom Einfrieren.
+
+Da die Elemente Teil der Tafel sind, werden sie mit der Datei gespeichert und für alle synchronisiert. Öffnest du
+die Tafel später wieder, ist auch das Overlay wieder da. Liegen versehentlich mehrere Fragestellungen auf der Tafel,
+zeigt das Overlay die zuletzt bearbeitete.
+
+Erkannt werden die Elemente an einer unsichtbaren Markierung. Fehlt sie, zum Beispiel bei einem selbst gebauten
+Textfeld, genügt der Textanfang „Fragestellung:“ bzw. „Hypothese:“.
+
+---
+
 ## Stundenuhr
 
 Ganz rechts in der Leiste zeigt ein Uhr-Symbol die Restzeit der laufenden Unterrichtsstunde, z. B. „23 min“.
@@ -125,7 +165,7 @@ den Inhalt wie gewohnt. Das Plugin steuert, *was* die Lernenden sehen und *wann*
 2. **„Lehrendenansicht“** wählen.
 3. Dasselbe Whiteboard in einem **neuen Fenster** öffnen (z. B. Adresse kopieren, Strg+N, einfügen), das Fenster
    auf den Beamer ziehen, wieder auf das Präsentations-Symbol klicken und **„Lernendenansicht“** wählen.
-4. In der Lernendenansicht oben links auf den Hinweis klicken und **„Vollbild (nur Tafel)“** wählen.
+4. In der Lernendenansicht unten rechts auf den Hinweis klicken und **„Vollbild (nur Tafel)“** wählen.
    Dann sind Seafile-Kopfzeile und Browserleisten verschwunden.
 
 Die Rolle merkt sich jeder Tab, auch nach einem Neuladen. Im Steuerpanel siehst du, ob eine Lernendenansicht
@@ -148,7 +188,7 @@ verbunden ist.
 
 - Reine Anzeige: Excalidraw läuft im Ansichtsmodus, die Bedienelemente sind ausgeblendet. Ein versehentlicher
   Klick am Beamer verändert nichts.
-- Oben links zeigt ein dezenter Hinweis den Zustand („verbunden“, „eingefroren“, „Lehrendenansicht nicht verbunden“).
+- Unten rechts zeigt ein dezenter Hinweis den Zustand („verbunden“, „eingefroren“, „Lehrendenansicht nicht verbunden“).
   Ein Klick darauf öffnet ein Menü mit Vollbild, Bedienelementen, Ausblenden des Hinweises und „Rolle beenden“.
 - Wird die Lernendenansicht während des Einfrierens neu geladen, zeigt sie eine leere Fläche („Tafel pausiert“)
   statt des verborgenen Stands.
@@ -199,6 +239,7 @@ Es gibt drei Wege, das Skript einzubinden:
 | `CHANGELOG.md` | Änderungen je Version (Quelle für die Release-Texte) |
 | `.github/workflows/release.yml` | Erstellt automatisch Releases |
 | `docs/images/` | Screenshots für diese Anleitung |
+| `library/fragestellung-hypothese.excalidrawlib` | Excalidraw-Bibliothek mit den Elementen „Fragestellung“ und „Hypothese“ |
 
 ---
 
@@ -444,7 +485,7 @@ er mit einer Fehlermeldung ab. Ist die Version schon veröffentlicht, passiert n
 
 **Präsentation: „Keine Lernendenansicht verbunden“**
 - Beide Tabs müssen dasselbe Whiteboard im selben Browser und Browserprofil zeigen. Ein privates Fenster zählt als anderes Profil.
-- In der Lernendenansicht muss die Rolle „Lernendenansicht“ gewählt sein (Hinweis oben links).
+- In der Lernendenansicht muss die Rolle „Lernendenansicht“ gewählt sein (Hinweis unten rechts).
 - Beide Tabs einmal neu laden. Die Rollen bleiben erhalten.
 
 **Präsentation: „Ansicht spiegeln“ ist ausgegraut**

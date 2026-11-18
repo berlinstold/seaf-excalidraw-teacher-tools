@@ -3,7 +3,7 @@
 // @namespace    https://github.com/berlinstold/seaf-excalidraw-teacher-tools
 // @homepageURL  https://github.com/berlinstold/seaf-excalidraw-teacher-tools
 // @license      MIT
-// @version      2.2.0
+// @version      2.3.0-dev
 // @description  Timer-Overlay und Präsentationsmodus (Lehrenden-/Lernendenansicht) für Excalidraw-Whiteboards in Seafile
 // @match        https://seafile.example.com/*
 // @grant        none
@@ -12,6 +12,11 @@
 //
 // Seafile Excalidraw Teacher Tools
 // --------------------------------
+// Fragestellung und Hypothese:
+//   - Bibliothekselemente bzw. Panel-Buttons fügen markierte Textfelder in die Tafel ein;
+//     ihr Text erscheint dauerhaft oben links (auch in der Lernendenansicht), außer das
+//     Element ist selbst vollständig sichtbar.
+//
 // Stundenuhr (nur Lehrende):
 //   - Restzeit der Unterrichtsstunde klein in der Leiste, Einzel- oder Doppelstunde,
 //     Beginn minutengenau einstellbar. Längen: LESSON_MINUTES / LESSON_BREAK_MINUTES unten.
@@ -1006,6 +1011,7 @@
         }
       }
       post({ type: 'status', frozen: frozenLocal });
+      Question.onFreeze(on, !!opts.neutral);
     }
 
     // --- Lehrendenansicht: Steuerung ------------------------------------------------
@@ -1133,6 +1139,8 @@
       '.link:hover{color:var(--fg)}',
       '.keys{font-size:11px;color:var(--muted)}',
       '.warn{font-size:11px;color:var(--warn);margin:2px 2px 6px}',
+      '.elbtns{display:flex;gap:6px;margin:2px 0 6px}',
+      '.elbtns .btn{flex:1;padding:0 6px;font-size:12px}',
       '[hidden]{display:none!important}'
     ].join('\n');
 
@@ -1170,6 +1178,13 @@
       '    <div class="foot"><button class="link" data-act="role" data-role="">Rolle beenden</button>' +
       '      <span class="keys">Alt+Shift+F / M / P</span></div>' +
       '  </div>' +
+      // Tafel-Elemente (in beiden Ansichten des Panels)
+      '  <div class="section" data-view="elements">' +
+      '    <div class="sep"></div>' +
+      '    <div class="row"><span class="lbl">Tafel-Elemente<span class="sub">Text bleibt oben links dauerhaft sichtbar</span></span></div>' +
+      '    <div class="elbtns"><button class="btn" data-act="insq">Fragestellung einfügen</button><button class="btn" data-act="insh">Hypothese einfügen</button></div>' +
+      '    <button class="link" data-act="addlib">Zur Excalidraw-Bibliothek hinzufügen</button>' +
+      '  </div>' +
       '</div>';
 
     var panel = null;
@@ -1201,6 +1216,9 @@
         case 'sendview': lastSent.key = ''; sendView(true); break;
         case 'fade': cfg.fade = !cfg.fade; saveCfg(); renderAll(); break;
         case 'synctimer': setLernTimer(!cfg.lernTimer); break;
+        case 'insq': Question.insert('question'); break;
+        case 'insh': Question.insert('hypothesis'); break;
+        case 'addlib': Question.addToLibrary(true); break;
       }
     }
 
@@ -1215,6 +1233,8 @@
       el.classList.toggle('frozen', role === 'lehrende' && cfg.frozen);
       r.querySelector('[data-view=choose]').hidden = role === 'lehrende';
       r.querySelector('[data-view=lehrende]').hidden = role !== 'lehrende';
+      r.querySelector('[data-view=elements]').hidden = !Question.available();
+      r.querySelector('[data-act=addlib]').hidden = !Question.libraryAvailable();
       if (role === 'lehrende') {
         var n = peerCount();
         var st = r.querySelector('.status');
@@ -1241,7 +1261,7 @@
 
     // --- Hinweis der Lernendenansicht ------------------------------------------------
     var BADGE_CSS = BASE_CSS + '\n' + [
-      '.wrap{display:flex;flex-direction:column;align-items:flex-start;gap:6px;font-family:Assistant,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:13px}',
+      '.wrap{display:flex;flex-direction:column-reverse;align-items:flex-end;gap:6px;font-family:Assistant,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:13px}',
       '.pill{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:var(--bg);color:var(--fg);',
       '  font:600 12px Assistant,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;box-shadow:0 2px 10px rgba(0,0,0,.12);cursor:pointer;opacity:.25;transition:opacity .3s}',
       '.wrap:hover .pill,.wrap.open .pill,.wrap.attn .pill{opacity:1}',
@@ -1276,8 +1296,8 @@
     function ensureBadge() {
       if (badge && badge.host.isConnected) return;
       var s = createShadowHost('sf-ex-pres-badge', BADGE_CSS, BADGE_HTML, 2147483002);
-      s.host.style.left = '12px';
-      s.host.style.top = '12px';
+      s.host.style.left = 'auto';
+      s.host.style.top = 'auto';
       badge = { host: s.host, root: s.root, wrap: s.root.querySelector('.wrap') };
       s.root.addEventListener('click', function (e) {
         var b = e.target.closest('[data-act]');
@@ -1300,11 +1320,12 @@
       if (!show) { if (badge) badge.host.style.display = 'none'; return; }
       ensureBadge();
       badge.host.style.display = '';
-      // oben links auf der Tafelfläche (nicht auf der Seafile-Kopfzeile);
-      // bei eingeblendeten Bedienelementen unter dem Excalidraw-Menü
-      var exr = getExcalidraw() ? getExcalidraw().getBoundingClientRect() : { left: 0, top: 0 };
-      badge.host.style.left = Math.round(Math.max(0, exr.left) + 12) + 'px';
-      badge.host.style.top = Math.round(Math.max(0, exr.top) + (lern.hideUi ? 12 : 64)) + 'px';
+      // unten rechts auf der Tafelfläche (oben links sitzt die Fragestellung);
+      // bei eingeblendeten Bedienelementen oberhalb der Excalidraw-Fußleiste
+      var exr = getExcalidraw() ? getExcalidraw().getBoundingClientRect()
+        : { right: window.innerWidth, bottom: window.innerHeight };
+      badge.host.style.right = Math.round(Math.max(0, window.innerWidth - exr.right) + 12) + 'px';
+      badge.host.style.bottom = Math.round(Math.max(0, window.innerHeight - exr.bottom) + (lern.hideUi ? 12 : 64)) + 'px';
       var r = badge.root;
       var connected = teacherConnected();
       badge.wrap.classList.toggle('dark', isDark());
@@ -1340,6 +1361,7 @@
       renderPanel();
       renderBadge();
       Lesson.render();
+      Question.render();
     }
 
     // Wird regelmäßig aus check() aufgerufen
@@ -1392,7 +1414,9 @@
       setLernTimer: function (v) { if (role === 'lehrende') setLernTimer(v); },
       onTimerOpened: function () { if (role === 'lehrende' && !cfg.lernTimer) setLernTimer(true); },
       isFrozen: function () { return role === 'lehrende' && cfg.frozen; },
-      isMirror: function () { return role === 'lehrende' && cfg.mirror; }
+      isMirror: function () { return role === 'lehrende' && cfg.mirror; },
+      isFrozenLocal: function () { return role === 'lernende' && frozenLocal; },
+      lernUiHidden: function () { return !!lern.hideUi; }
     };
   })();
 
@@ -1698,6 +1722,333 @@
   })();
 
   // ===========================================================================
+  // FRAGESTELLUNG UND HYPOTHESE
+  // Quelle sind normale Excalidraw-Elemente (Rahmen mit Text) auf der Tafel,
+  // erkennbar an customData.sfTeacherTools oder am Textanfang "Fragestellung:" / "Hypothese:".
+  // Das Overlay zeigt ihren Text dauerhaft in der Ecke, solange das Element nicht
+  // selbst vollständig auf dem Bildschirm zu sehen ist.
+  // ===========================================================================
+  var Question = (function () {
+    var KINDS = {
+      question: { label: 'Fragestellung', prefix: /^\s*fragestellung\s*:?\s*/i, stroke: '#1971c2', bg: '#e7f5ff', accent: '#1971c2' },
+      hypothesis: { label: 'Hypothese', prefix: /^\s*hypothese\s*:?\s*/i, stroke: '#2f9e44', bg: '#ebfbee', accent: '#2f9e44' }
+    };
+    var ORDER = ['question', 'hypothesis'];
+    var MARK = 'sfTeacherTools';
+    var COLLAPSE_KEY = 'sf-excalidraw-question-collapsed:v1';
+    var LIB_FLAG_KEY = 'sf-excalidraw-question-lib:v1';
+    var LIB_IDS = { question: 'sf-teacher-tools-fragestellung', hypothesis: 'sf-teacher-tools-hypothese' };
+
+    var ui = null;
+    var poll = null;
+    var current = {};        // kind -> { text, el } (live aus der Tafel)
+    var frozenSnap = null;   // Lernendenansicht: Stand beim Einfrieren (null = nichts zeigen)
+    var collapsed = !!jsonGet(localStorage, COLLAPSE_KEY);
+    var libTried = false;
+
+    // --- Tafel auslesen --------------------------------------------------------
+    function sceneElements(app) {
+      var sc = app && app.scene;
+      if (!sc) return null;
+      try {
+        if (typeof sc.getNonDeletedElements === 'function') return sc.getNonDeletedElements();
+        if (typeof sc.getElementsIncludingDeleted === 'function') return sc.getElementsIncludingDeleted().filter(function (e) { return !e.isDeleted; });
+        if (typeof sc.getElements === 'function') return sc.getElements();
+      } catch (e) { /* ignorieren */ }
+      return null;
+    }
+
+    function markOf(el) {
+      var k = el && el.customData && el.customData[MARK];
+      return KINDS[k] ? k : null;
+    }
+
+    function prefixKind(text) {
+      for (var i = 0; i < ORDER.length; i++) if (KINDS[ORDER[i]].prefix.test(text || '')) return ORDER[i];
+      return null;
+    }
+
+    function bodyOf(kind, text) {
+      var t = String(text || '').replace(KINDS[kind].prefix, '').replace(/\s+/g, ' ').trim();
+      // Platzhalter ("…", "...") gilt als leer
+      return /^[.…\s]*$/.test(t) ? '' : t;
+    }
+
+    function scan() {
+      var app = getApp();
+      var els = sceneElements(app);
+      if (!els) return null;
+      var byId = {};
+      els.forEach(function (e) { byId[e.id] = e; });
+      var found = {};
+      els.forEach(function (t) {
+        if (t.type !== 'text' || t.isDeleted) return;
+        var container = t.containerId ? byId[t.containerId] : null;
+        var raw = t.originalText != null ? t.originalText : t.text;
+        var kind = markOf(t) || markOf(container) || prefixKind(raw);
+        if (!kind) return;
+        var body = bodyOf(kind, raw);
+        if (!body) return;
+        var box = container || t;
+        var updated = Math.max(t.updated || 0, (container && container.updated) || 0);
+        if (!found[kind] || updated > found[kind].updated) found[kind] = { text: body, el: box, updated: updated };
+      });
+      return found;
+    }
+
+    // Liegt das Element vollständig im sichtbaren Ausschnitt?
+    function fullyVisible(el) {
+      var app = getApp();
+      if (!app || !app.state || !el) return false;
+      var s = app.state;
+      var z = (s.zoom && s.zoom.value) || 1;
+      var ex = getExcalidraw();
+      var W = s.width || (ex ? ex.clientWidth : window.innerWidth);
+      var H = s.height || (ex ? ex.clientHeight : window.innerHeight);
+      var x0 = -s.scrollX, y0 = -s.scrollY, x1 = x0 + W / z, y1 = y0 + H / z;
+      var ex0 = Math.min(el.x, el.x + el.width), ey0 = Math.min(el.y, el.y + el.height);
+      var ex1 = Math.max(el.x, el.x + el.width), ey1 = Math.max(el.y, el.y + el.height);
+      return ex0 >= x0 && ey0 >= y0 && ex1 <= x1 && ey1 <= y1;
+    }
+
+    // --- Neue Elemente erzeugen ------------------------------------------------
+    function rid() { return Math.random().toString(36).slice(2, 12) + Math.random().toString(36).slice(2, 12); }
+    function rnd() { return Math.floor(Math.random() * 2147483647); }
+
+    function makeElements(kind, cx, cy, fontFamily) {
+      var k = KINDS[kind];
+      var W = 560, H = 96, fs = 20;
+      var text = k.label + ': …';
+      var tw = Math.round(text.length * fs * 0.55), th = Math.round(fs * 1.25);
+      var rectId = rid(), textId = rid(), t = now();
+      var base = {
+        angle: 0, strokeWidth: 2, strokeStyle: 'solid', roughness: 1, opacity: 100, groupIds: [], frameId: null,
+        version: 1, isDeleted: false, updated: t, link: null, locked: false
+      };
+      var rect = Object.assign({}, base, {
+        id: rectId, type: 'rectangle', x: Math.round(cx - W / 2), y: Math.round(cy - H / 2), width: W, height: H,
+        strokeColor: k.stroke, backgroundColor: k.bg, fillStyle: 'solid', roundness: { type: 3 },
+        seed: rnd(), versionNonce: rnd(), boundElements: [{ type: 'text', id: textId }],
+        customData: (function () { var c = {}; c[MARK] = kind; return c; })()
+      });
+      var txt = Object.assign({}, base, {
+        id: textId, type: 'text', x: Math.round(rect.x + (W - tw) / 2), y: Math.round(rect.y + (H - th) / 2), width: tw, height: th,
+        strokeColor: '#1e1e1e', backgroundColor: 'transparent', fillStyle: 'solid', roundness: null,
+        seed: rnd(), versionNonce: rnd(), boundElements: null,
+        text: text, originalText: text, fontSize: fs, fontFamily: fontFamily || 1, textAlign: 'center',
+        verticalAlign: 'middle', containerId: rectId, lineHeight: 1.25, autoResize: true,
+        customData: (function () { var c = {}; c[MARK] = kind; return c; })()
+      });
+      return [rect, txt];
+    }
+
+    // Element mitten in den sichtbaren Bereich der Tafel einfügen
+    function insert(kind) {
+      var app = getApp();
+      if (!app || !app.state || typeof app.updateScene !== 'function' || !app.scene) return false;
+      var s = app.state;
+      var z = (s.zoom && s.zoom.value) || 1;
+      var cx = -s.scrollX + (s.width || window.innerWidth) / (2 * z);
+      var cy = -s.scrollY + (s.height || window.innerHeight) / (3 * z);
+      var news = makeElements(kind, cx, cy, s.currentItemFontFamily);
+      var all;
+      try {
+        all = typeof app.scene.getElementsIncludingDeleted === 'function'
+          ? app.scene.getElementsIncludingDeleted().slice() : (sceneElements(app) || []).slice();
+      } catch (e) { return false; }
+      var sel = {}; sel[news[0].id] = true;
+      app.updateScene({
+        elements: all.concat(news),
+        appState: { selectedElementIds: sel },
+        captureUpdate: 'IMMEDIATELY', commitToHistory: true
+      });
+      return true;
+    }
+
+    // --- Excalidraw-Bibliothek -----------------------------------------------------
+    function libraryItems() {
+      return ORDER.map(function (kind) {
+        return { id: LIB_IDS[kind], status: 'unpublished', created: now(), name: KINDS[kind].label, elements: makeElements(kind, 0, 0, 1) };
+      });
+    }
+
+    // Einmal pro Browser automatisch, oder auf Wunsch erneut (force)
+    function addToLibrary(force) {
+      var app = getApp();
+      var lib = app && app.library;
+      if (!lib || typeof lib.updateLibrary !== 'function') return Promise.resolve(false);
+      if (!force && jsonGet(localStorage, LIB_FLAG_KEY)) return Promise.resolve(false);
+      var getter = typeof lib.getLatestLibrary === 'function' ? lib.getLatestLibrary() : Promise.resolve([]);
+      return Promise.resolve(getter).then(function (items) {
+        items = items || [];
+        var missing = libraryItems().filter(function (it) { return !items.some(function (x) { return x && x.id === it.id; }); });
+        jsonSet(localStorage, LIB_FLAG_KEY, true);
+        if (!missing.length) return true;
+        return Promise.resolve(lib.updateLibrary({ libraryItems: missing, merge: true, defaultStatus: 'unpublished', openLibraryMenu: !!force }))
+          .then(function () { return true; });
+      }).catch(function () { return false; });
+    }
+
+    // --- Overlay ------------------------------------------------------------------------
+    var CSS = BASE_CSS + '\n' + [
+      '.card{font-family:Assistant,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--fg);',
+      '  background:var(--bg);border:1px solid var(--border);border-radius:12px;box-shadow:0 4px 18px rgba(0,0,0,.12);',
+      '  padding:8px 10px;display:flex;flex-direction:column;gap:8px;max-width:var(--maxw);position:relative}',
+      '.vars{--bg:#fff;--fg:#1b1b1f;--muted:#70707b;--border:#e3e3ea;--btn:#f1f0ff;--maxw:min(36vw,460px);--fs:14px}',
+      '.vars.dark{--bg:#232329;--fg:#e3e3e8;--muted:#a0a0ab;--border:#3a3a44;--btn:#31303b}',
+      '.vars.lern{--maxw:min(44vw,760px);--fs:clamp(18px,1.6vw,32px)}',
+      '.item{border-left:3px solid var(--accent);padding:1px 0 1px 9px}',
+      '.item[data-kind=question]{--accent:#1971c2}',
+      '.item[data-kind=hypothesis]{--accent:#2f9e44}',
+      '.dark .item[data-kind=question]{--accent:#74c0fc}',
+      '.dark .item[data-kind=hypothesis]{--accent:#8ce99a}',
+      '.lbl{font-size:calc(var(--fs) * .78);font-weight:700;color:var(--accent);line-height:1.2}',
+      '.txt{font-size:var(--fs);line-height:1.35;overflow-wrap:anywhere}',
+      '.lehr .item{cursor:pointer}',
+      '.lehr .item:hover .txt{text-decoration:underline;text-decoration-color:var(--border)}',
+      '.lehr .card{padding-right:34px}',
+      '.tog{position:absolute;top:4px;right:4px;display:none}',
+      '.lehr .tog{display:inline-flex}',
+      '.pill{display:none;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;border:1px solid var(--border);background:var(--bg);color:var(--fg);',
+      '  font:600 12px Assistant,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;box-shadow:0 2px 10px rgba(0,0,0,.1);cursor:pointer}',
+      '.pill svg{width:14px;height:14px}',
+      '.collapsed .card{display:none}',
+      '.collapsed .pill{display:inline-flex}',
+      '[hidden]{display:none!important}'
+    ].join('\n');
+
+    var ICON_CHEVRON_UP = svgIcon('<path d="M6 15l6-6l6 6"/>');
+    var ICON_CHEVRON_DOWN = svgIcon('<path d="M6 9l6 6l6-6"/>');
+
+    var HTML = '' +
+      '<div class="wrap vars">' +
+      '  <div class="card" role="note" aria-label="Fragestellung und Hypothese">' +
+      '    <button class="icon tog" data-act="collapse" title="Einklappen">' + ICON_CHEVRON_UP + '</button>' +
+      '    <div class="item" data-kind="question" hidden><div class="lbl">Fragestellung</div><div class="txt"></div></div>' +
+      '    <div class="item" data-kind="hypothesis" hidden><div class="lbl">Hypothese</div><div class="txt"></div></div>' +
+      '  </div>' +
+      '  <button class="pill" data-act="expand" title="Ausklappen"><span class="ptext"></span>' + ICON_CHEVRON_DOWN + '</button>' +
+      '</div>';
+
+    function ensureUI() {
+      if (ui && ui.host.isConnected) return;
+      var s = createShadowHost('sf-ex-question', CSS, HTML, 2147482995);
+      ui = { host: s.host, root: s.root, wrap: s.root.querySelector('.wrap') };
+      s.root.addEventListener('click', function (e) {
+        var b = e.target.closest('[data-act], .item');
+        if (!b) return;
+        var act = b.getAttribute('data-act');
+        if (act === 'collapse') { collapsed = true; jsonSet(localStorage, COLLAPSE_KEY, true); render(); }
+        else if (act === 'expand') { collapsed = false; jsonSet(localStorage, COLLAPSE_KEY, false); render(); }
+        else if (b.classList.contains('item')) jumpTo(b.getAttribute('data-kind'));
+      });
+    }
+
+    // Klick auf den Text: Tafel zum Element scrollen (nur Lehrende)
+    function jumpTo(kind) {
+      var c = current[kind];
+      var app = getApp();
+      if (!c || !app) return;
+      try {
+        if (typeof app.scrollToContent === 'function') { app.scrollToContent(c.el, { animate: true, fitToContent: false }); return; }
+      } catch (e) { /* weiter mit Fallback */ }
+      var s = app.state, z = (s.zoom && s.zoom.value) || 1;
+      appSet(app, { scrollX: (s.width / (2 * z)) - (c.el.x + c.el.width / 2), scrollY: (s.height / (2 * z)) - (c.el.y + c.el.height / 2) });
+    }
+
+    // Excalidraw-Eigenschaftenpanel (links, bei Auswahl) ausweichen
+    function leftObstacle(exr) {
+      var sels = ['.App-menu__left', '.selected-shape-actions', '.properties-content'];
+      var right = 0;
+      sels.forEach(function (sel) {
+        var el = document.querySelector('.excalidraw ' + sel);
+        if (!el) return;
+        var r = el.getBoundingClientRect();
+        if (r.width > 0 && r.height > 0 && r.left < exr.left + 120) right = Math.max(right, r.right);
+      });
+      return right;
+    }
+
+    function place() {
+      var ex = getExcalidraw();
+      var exr = ex ? ex.getBoundingClientRect() : { left: 0, top: 0 };
+      var lern = Pres.role() === 'lernende';
+      var left = Math.max(0, exr.left) + 12;
+      var top = Math.max(0, exr.top) + (lern && Pres.lernUiHidden() ? 12 : 64);
+      if (!lern) {
+        var obs = leftObstacle(exr);
+        if (obs) left = Math.max(left, obs + 12);
+      }
+      ui.host.style.left = Math.round(left) + 'px';
+      ui.host.style.top = Math.round(top) + 'px';
+    }
+
+    function render() {
+      var lern = Pres.role() === 'lernende';
+      var data = lern && Pres.isFrozenLocal() ? (frozenSnap || {}) : current;
+      var shown = ORDER.filter(function (k) { return data[k] && data[k].text && !(data[k].visible); });
+      if (!excalidrawActive || !shown.length) { if (ui) ui.host.style.display = 'none'; return; }
+      ensureUI();
+      ui.host.style.display = '';
+      ui.host.style.pointerEvents = lern ? 'none' : '';
+      ui.wrap.classList.toggle('dark', isDark());
+      ui.wrap.classList.toggle('lern', lern);
+      ui.wrap.classList.toggle('lehr', !lern);
+      ui.wrap.classList.toggle('collapsed', !lern && collapsed);
+      ORDER.forEach(function (k) {
+        var item = ui.root.querySelector('.item[data-kind=' + k + ']');
+        var on = shown.indexOf(k) >= 0;
+        item.hidden = !on;
+        if (on) {
+          var t = ui.root.querySelector('.item[data-kind=' + k + '] .txt');
+          if (t.textContent !== data[k].text) t.textContent = data[k].text;
+          item.title = lern ? '' : 'Klicken, um zur ' + KINDS[k].label + ' auf der Tafel zu springen';
+        }
+      });
+      ui.root.querySelector('.ptext').textContent = shown.map(function (k) { return KINDS[k].label; }).join(' · ');
+      place();
+    }
+
+    function update() {
+      if (!excalidrawActive) { render(); return; }
+      var found = scan();
+      if (!found) { current = {}; render(); return; }
+      var next = {};
+      ORDER.forEach(function (k) {
+        if (found[k]) next[k] = { text: found[k].text, el: found[k].el, visible: fullyVisible(found[k].el) };
+      });
+      current = next;
+      render();
+      if (!libTried && Pres.role() !== 'lernende' && getApp()) { libTried = true; addToLibrary(false); }
+    }
+
+    // Lernendenansicht: beim Einfrieren den aktuellen Stand merken
+    function onFreeze(on, neutral) {
+      if (on) {
+        if (neutral) { frozenSnap = {}; }
+        else {
+          frozenSnap = {};
+          ORDER.forEach(function (k) { if (current[k]) frozenSnap[k] = { text: current[k].text, visible: current[k].visible }; });
+        }
+      } else {
+        frozenSnap = null;
+      }
+      update();
+    }
+
+    function init() {
+      if (!poll) poll = setInterval(update, 300);
+    }
+
+    return {
+      init: init, render: render, update: update, onFreeze: onFreeze,
+      insert: insert, addToLibrary: addToLibrary, libraryItems: libraryItems,
+      available: function () { var a = getApp(); return !!(a && a.scene && typeof a.updateScene === 'function'); },
+      libraryAvailable: function () { var a = getApp(); return !!(a && a.library && typeof a.library.updateLibrary === 'function'); }
+    };
+  })();
+
+  // ===========================================================================
   // Buttons in der Excalidraw-Leiste
   // ===========================================================================
   var Buttons = (function () {
@@ -1964,6 +2315,7 @@
   function init() {
     Timer.init();
     Lesson.init();
+    Question.init();
     Pres.init();
     new MutationObserver(scheduleCheck).observe(document.documentElement, { childList: true, subtree: true });
     document.addEventListener('keydown', onHotkey, true);

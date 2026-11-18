@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.3.0 (in Arbeit)
+
+- Neu: Fragestellung und Hypothese
+  - Markierte Textfelder auf der Tafel; ihr Text erscheint dauerhaft oben links, auch in der Lernendenansicht
+  - Overlay nur, wenn ein Element mit Text vorhanden ist und es nicht selbst vollständig sichtbar ist
+  - Elemente werden automatisch in die Excalidraw-Bibliothek gelegt, lassen sich im Präsentationspanel einfügen und
+    liegen als `library/fragestellung-hypothese.excalidrawlib` bei
+  - Lehrendenansicht: weicht dem Eigenschaften-Panel aus, einklappbar, Klick springt zum Element
+  - Eingefrorene Lernendenansicht zeigt den Stand vom Einfrieren
+- Hinweis der Lernendenansicht sitzt jetzt unten rechts (oben links ist die Fragestellung)
+
 ## 2.2.0
 
 - Neu: Stundenuhr in der Leiste (nur für Lehrende, nie in der Lernendenansicht)

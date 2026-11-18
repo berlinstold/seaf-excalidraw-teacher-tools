@@ -1,0 +1,175 @@
+{
+  "type": "excalidrawlib",
+  "version": 2,
+  "source": "https://github.com/berlinstold/seaf-excalidraw-teacher-tools",
+  "libraryItems": [
+    {
+      "id": "sf-teacher-tools-fragestellung",
+      "status": "unpublished",
+      "created": 1763500000000,
+      "name": "Fragestellung",
+      "elements": [
+        {
+          "angle": 0,
+          "strokeWidth": 2,
+          "strokeStyle": "solid",
+          "roughness": 1,
+          "opacity": 100,
+          "groupIds": [],
+          "frameId": null,
+          "version": 1,
+          "isDeleted": false,
+          "updated": 1763500000000,
+          "link": null,
+          "locked": false,
+          "id": "hbrpoig8f1cbfno6b9m8",
+          "type": "rectangle",
+          "x": 0,
+          "y": 0,
+          "width": 560,
+          "height": 96,
+          "strokeColor": "#1971c2",
+          "backgroundColor": "#e7f5ff",
+          "fillStyle": "solid",
+          "roundness": {
+            "type": 3
+          },
+          "seed": 1567087081,
+          "versionNonce": 986607412,
+          "boundElements": [
+            {
+              "type": "text",
+              "id": "0o2rak1vrjnvgfygwwqc"
+            }
+          ],
+          "customData": {
+            "sfTeacherTools": "question"
+          }
+        },
+        {
+          "angle": 0,
+          "strokeWidth": 2,
+          "strokeStyle": "solid",
+          "roughness": 1,
+          "opacity": 100,
+          "groupIds": [],
+          "frameId": null,
+          "version": 1,
+          "isDeleted": false,
+          "updated": 1763500000000,
+          "link": null,
+          "locked": false,
+          "id": "0o2rak1vrjnvgfygwwqc",
+          "type": "text",
+          "x": 192,
+          "y": 36,
+          "width": 176,
+          "height": 25,
+          "strokeColor": "#1e1e1e",
+          "backgroundColor": "transparent",
+          "fillStyle": "solid",
+          "roundness": null,
+          "seed": 1151541059,
+          "versionNonce": 268062141,
+          "boundElements": null,
+          "text": "Fragestellung: …",
+          "originalText": "Fragestellung: …",
+          "fontSize": 20,
+          "fontFamily": 1,
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "containerId": "hbrpoig8f1cbfno6b9m8",
+          "lineHeight": 1.25,
+          "autoResize": true,
+          "customData": {
+            "sfTeacherTools": "question"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sf-teacher-tools-hypothese",
+      "status": "unpublished",
+      "created": 1763500000000,
+      "name": "Hypothese",
+      "elements": [
+        {
+          "angle": 0,
+          "strokeWidth": 2,
+          "strokeStyle": "solid",
+          "roughness": 1,
+          "opacity": 100,
+          "groupIds": [],
+          "frameId": null,
+          "version": 1,
+          "isDeleted": false,
+          "updated": 1763500000000,
+          "link": null,
+          "locked": false,
+          "id": "yf9sxmecosfogyr3xkxw",
+          "type": "rectangle",
+          "x": 0,
+          "y": 0,
+          "width": 560,
+          "height": 96,
+          "strokeColor": "#2f9e44",
+          "backgroundColor": "#ebfbee",
+          "fillStyle": "solid",
+          "roundness": {
+            "type": 3
+          },
+          "seed": 453082199,
+          "versionNonce": 1960944881,
+          "boundElements": [
+            {
+              "type": "text",
+              "id": "nrek8pk3yr9oudocuzre"
+            }
+          ],
+          "customData": {
+            "sfTeacherTools": "hypothesis"
+          }
+        },
+        {
+          "angle": 0,
+          "strokeWidth": 2,
+          "strokeStyle": "solid",
+          "roughness": 1,
+          "opacity": 100,
+          "groupIds": [],
+          "frameId": null,
+          "version": 1,
+          "isDeleted": false,
+          "updated": 1763500000000,
+          "link": null,
+          "locked": false,
+          "id": "nrek8pk3yr9oudocuzre",
+          "type": "text",
+          "x": 214,
+          "y": 36,
+          "width": 132,
+          "height": 25,
+          "strokeColor": "#1e1e1e",
+          "backgroundColor": "transparent",
+          "fillStyle": "solid",
+          "roundness": null,
+          "seed": 2024883187,
+          "versionNonce": 1218009888,
+          "boundElements": null,
+          "text": "Hypothese: …",
+          "originalText": "Hypothese: …",
+          "fontSize": 20,
+          "fontFamily": 1,
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "containerId": "yf9sxmecosfogyr3xkxw",
+          "lineHeight": 1.25,
+          "autoResize": true,
+          "customData": {
+            "sfTeacherTools": "hypothesis"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -102,7 +102,7 @@ jobs:
         run: |
           PKG=dist/seaf-excalidraw-teacher-tools
           mkdir -p "$PKG"
-          cp -r excalidraw-timer.js install.sh nginx-snippet.conf README.md CHANGELOG.md LICENSE docs "$PKG"/
+          cp -r excalidraw-timer.js install.sh nginx-snippet.conf README.md CHANGELOG.md LICENSE docs library "$PKG"/
           chmod +x "$PKG/install.sh"
           (cd dist && zip -qr seaf-excalidraw-teacher-tools.zip seaf-excalidraw-teacher-tools)
           cp excalidraw-timer.js dist/
@@ -117,6 +117,7 @@ jobs:
           gh release create "v$VERSION" \
             dist/seaf-excalidraw-teacher-tools.zip \
             dist/excalidraw-timer.js \
+            library/fragestellung-hypothese.excalidrawlib \
             --target "$GITHUB_SHA" \
             --title "v$VERSION" \
             --notes-file notes.md \
