@@ -8,8 +8,8 @@
     (Leitfrage Blau, Fragestellung Mint `#e6fcf5`, Hypothese Violett)
   - Overlay im gleichen Stil, schmal gehalten, Reihenfolge Leitfrage, Fragestellung, Hypothese
   - Overlay nur für Elemente mit Text, die nicht selbst vollständig sichtbar sind
-  - Elemente werden automatisch in die Excalidraw-Bibliothek gelegt (ältere Versionen ersetzt), lassen sich im
-    Präsentationspanel einfügen und liegen als `library/leitfrage-fragestellung-hypothese.excalidrawlib` bei
+  - Elemente kommen automatisch in die Excalidraw-Bibliothek (bei jedem Laden geprüft, fehlende ergänzt, ältere
+    Versionen ersetzt) und liegen als `library/leitfrage-fragestellung-hypothese.excalidrawlib` bei
   - Lehrendenansicht: weicht dem Eigenschaften-Panel aus, einklappbar, Klick springt zum Element
   - Eingefrorene Lernendenansicht zeigt den Stand vom Einfrieren
 - Hinweis der Lernendenansicht sitzt jetzt unten rechts (oben links ist das Overlay)

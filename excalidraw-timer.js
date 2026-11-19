@@ -1139,9 +1139,6 @@
       '.link:hover{color:var(--fg)}',
       '.keys{font-size:11px;color:var(--muted)}',
       '.warn{font-size:11px;color:var(--warn);margin:2px 2px 6px}',
-      '.elbtns{display:flex;gap:6px;margin:2px 0 6px}',
-      '.elbtns .btn{flex:1;padding:0 4px;font-size:12px}',
-      '.ellbl{font-size:11px;color:var(--muted);margin:2px 2px 4px}',
       '[hidden]{display:none!important}'
     ].join('\n');
 
@@ -1179,14 +1176,6 @@
       '    <div class="foot"><button class="link" data-act="role" data-role="">Rolle beenden</button>' +
       '      <span class="keys">Alt+Shift+F / M / P</span></div>' +
       '  </div>' +
-      // Tafel-Elemente (in beiden Ansichten des Panels)
-      '  <div class="section" data-view="elements">' +
-      '    <div class="sep"></div>' +
-      '    <div class="row"><span class="lbl">Tafel-Elemente<span class="sub">Text bleibt oben links dauerhaft sichtbar</span></span></div>' +
-      '    <div class="ellbl">Einfügen:</div>' +
-      '    <div class="elbtns"><button class="btn" data-act="insl">Leitfrage</button><button class="btn" data-act="insq">Fragestellung</button><button class="btn" data-act="insh">Hypothese</button></div>' +
-      '    <button class="link" data-act="addlib">Zur Excalidraw-Bibliothek hinzufügen</button>' +
-      '  </div>' +
       '</div>';
 
     var panel = null;
@@ -1218,10 +1207,6 @@
         case 'sendview': lastSent.key = ''; sendView(true); break;
         case 'fade': cfg.fade = !cfg.fade; saveCfg(); renderAll(); break;
         case 'synctimer': setLernTimer(!cfg.lernTimer); break;
-        case 'insl': Question.insert('leitfrage'); break;
-        case 'insq': Question.insert('question'); break;
-        case 'insh': Question.insert('hypothesis'); break;
-        case 'addlib': Question.addToLibrary(true); break;
       }
     }
 
@@ -1236,8 +1221,6 @@
       el.classList.toggle('frozen', role === 'lehrende' && cfg.frozen);
       r.querySelector('[data-view=choose]').hidden = role === 'lehrende';
       r.querySelector('[data-view=lehrende]').hidden = role !== 'lehrende';
-      r.querySelector('[data-view=elements]').hidden = !Question.available();
-      r.querySelector('[data-act=addlib]').hidden = !Question.libraryAvailable();
       if (role === 'lehrende') {
         var n = peerCount();
         var st = r.querySelector('.status');
@@ -1756,8 +1739,6 @@
     var COLLAPSE_KEY = 'sf-excalidraw-question-collapsed:v1';
     var LIB_PREFIX = 'sf-teacher-tools-';
     var LIB_IDS = { leitfrage: LIB_PREFIX + 'leitfrage-v4', question: LIB_PREFIX + 'question-v4', hypothesis: LIB_PREFIX + 'hypothesis-v4' };
-    // Ändert sich das Design, kommen die Einträge einmal neu in die Bibliothek (ältere werden ersetzt)
-    var LIB_FLAG_KEY = 'sf-excalidraw-question-lib:v4';
 
     var ui = null;
     var poll = null;
@@ -1893,30 +1874,6 @@
       return [body, bodyText, tab, tabText];
     }
 
-    // Element mitten in den sichtbaren Bereich der Tafel einfügen
-    function insert(kind) {
-      var app = getApp();
-      if (!app || !app.state || typeof app.updateScene !== 'function' || !app.scene) return false;
-      var s = app.state;
-      var z = (s.zoom && s.zoom.value) || 1;
-      var cx = -s.scrollX + (s.width || window.innerWidth) / (2 * z);
-      var cy = -s.scrollY + (s.height || window.innerHeight) / (3 * z);
-      var news = makeElements(kind, cx, cy, s.currentItemFontFamily);
-      var all;
-      try {
-        all = typeof app.scene.getElementsIncludingDeleted === 'function'
-          ? app.scene.getElementsIncludingDeleted().slice() : (sceneElements(app) || []).slice();
-      } catch (e) { return false; }
-      var sel = {}; news.forEach(function (e) { sel[e.id] = true; });
-      var gsel = {}; gsel[news[0].groupIds[0]] = true;
-      app.updateScene({
-        elements: all.concat(news),
-        appState: { selectedElementIds: sel, selectedGroupIds: gsel },
-        captureUpdate: 'IMMEDIATELY', commitToHistory: true
-      });
-      return true;
-    }
-
     // --- Excalidraw-Bibliothek -----------------------------------------------------
     function libraryItems() {
       return ORDER.map(function (kind) {
@@ -1924,12 +1881,12 @@
       });
     }
 
-    // Einmal pro Browser automatisch, oder auf Wunsch erneut (force)
-    function addToLibrary(force) {
+    // Bei jedem Laden prüfen: fehlende Elemente ergänzen, ältere Versionen ersetzen.
+    // (Auch für den Fall, dass Seafile die Bibliothek nicht dauerhaft speichert.)
+    function ensureLibrary() {
       var app = getApp();
       var lib = app && app.library;
       if (!lib || typeof lib.updateLibrary !== 'function') return Promise.resolve(false);
-      if (!force && jsonGet(localStorage, LIB_FLAG_KEY)) return Promise.resolve(false);
       var getter = typeof lib.getLatestLibrary === 'function' ? lib.getLatestLibrary() : Promise.resolve([]);
       return Promise.resolve(getter).then(function (items) {
         items = items || [];
@@ -1937,15 +1894,13 @@
         var isCurrent = function (x) { return mine.some(function (it) { return x && x.id === it.id; }); };
         var outdated = items.filter(function (x) { return x && typeof x.id === 'string' && x.id.indexOf(LIB_PREFIX) === 0 && !isCurrent(x); });
         var missing = mine.filter(function (it) { return !items.some(function (x) { return x && x.id === it.id; }); });
-        jsonSet(localStorage, LIB_FLAG_KEY, true);
         if (!missing.length && !outdated.length) return true;
-        // Ältere Versionen dieser Elemente (anderes Design/Bezeichnung) durch die aktuellen ersetzen,
-        // alle anderen Bibliothekseinträge bleiben unverändert
+        // Ältere Versionen dieser Elemente durch die aktuellen ersetzen, alle anderen Einträge bleiben unverändert
         var opts = outdated.length
           ? { libraryItems: items.filter(function (x) { return outdated.indexOf(x) < 0; }).concat(missing), merge: false }
           : { libraryItems: missing, merge: true };
         opts.defaultStatus = 'unpublished';
-        opts.openLibraryMenu = !!force;
+        opts.openLibraryMenu = false;
         return Promise.resolve(lib.updateLibrary(opts)).then(function () { return true; });
       }).catch(function () { return false; });
     }
@@ -2085,7 +2040,7 @@
       });
       current = next;
       render();
-      if (!libTried && Pres.role() !== 'lernende' && getApp()) { libTried = true; addToLibrary(false); }
+      if (!libTried && Pres.role() !== 'lernende' && getApp()) { libTried = true; ensureLibrary(); }
     }
 
     // Lernendenansicht: beim Einfrieren den aktuellen Stand merken
@@ -2108,9 +2063,7 @@
 
     return {
       init: init, render: render, update: update, onFreeze: onFreeze,
-      insert: insert, addToLibrary: addToLibrary, libraryItems: libraryItems,
-      available: function () { var a = getApp(); return !!(a && a.scene && typeof a.updateScene === 'function'); },
-      libraryAvailable: function () { var a = getApp(); return !!(a && a.library && typeof a.library.updateLibrary === 'function'); }
+      libraryItems: libraryItems
     };
   })();
 

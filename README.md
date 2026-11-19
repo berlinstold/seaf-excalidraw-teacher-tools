@@ -89,16 +89,13 @@ Kombination verwenden.
 | **Fragestellung** | Mint (`#e6fcf5`) | die naturwissenschaftliche Fragestellung im Erkenntnisweg |
 | **Hypothese** | Violett | die Hypothese zur Fragestellung |
 
-**Element auf die Tafel bringen** (eine der Möglichkeiten):
+**Element auf die Tafel bringen:** Die drei Elemente liegen in deiner **Excalidraw-Bibliothek**. Von dort ziehst
+du sie wie jedes andere Bibliothekselement auf die Tafel. Das Plugin prüft bei jedem Laden, ob sie vorhanden sind,
+ergänzt fehlende und ersetzt ältere Versionen. Deine eigenen Bibliothekseinträge bleiben dabei unverändert. Ein
+Element, das du aus der Bibliothek löschst, kommt deshalb beim nächsten Laden wieder.
 
-- **Aus der Excalidraw-Bibliothek:** Das Plugin legt die drei Elemente beim ersten Start automatisch in deine
-  Bibliothek. Von dort ziehst du sie wie jedes andere Bibliothekselement auf die Tafel.
-- **Über das Präsentationspanel:** Präsentations-Symbol in der Leiste, dann unter „Tafel-Elemente“ auf
-  **Leitfrage**, **Fragestellung** oder **Hypothese**. Das Element erscheint im sichtbaren Bereich der Tafel.
-- **Per Datei:** `library/leitfrage-fragestellung-hypothese.excalidrawlib` (liegt auch jedem Release bei) über
-  das Bibliotheks-Menü von Excalidraw importieren. Fehlen die Elemente in der Bibliothek, holt der Link
-  **„Zur Excalidraw-Bibliothek hinzufügen“** im Präsentationspanel sie zurück. Ältere Versionen der Elemente
-  in der Bibliothek ersetzt das Plugin automatisch, deine eigenen Einträge bleiben unverändert.
+Alternativ lässt sich `library/leitfrage-fragestellung-hypothese.excalidrawlib` (liegt auch jedem Release bei) über
+das Bibliotheks-Menü von Excalidraw importieren.
 
 **Aufbau und Bedienung:** Jedes Element besteht aus einem farbigen Reiter mit der Überschrift und dem Kasten
 darunter. Doppelklick in den Kasten und den Platzhalter „…“ durch den eigenen Text ersetzen. Reiter und Kasten
