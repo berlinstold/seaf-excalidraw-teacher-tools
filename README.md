@@ -107,8 +107,12 @@ sind gruppiert und lassen sich gemeinsam verschieben.
 - Nicht für Elemente, die gerade selbst vollständig auf dem Bildschirm zu sehen sind. Das vermeidet doppelte Anzeige.
 - Reihenfolge im Overlay: Leitfrage, Fragestellung, Hypothese.
 - In der Lehrendenansicht unter dem Excalidraw-Menü. Ist links das Eigenschaften-Panel von Excalidraw offen,
-  rückt es daneben. Ein Klick auf einen Text springt zum Element, der Pfeil klappt das Overlay zu einer kleinen Leiste ein.
+  rückt es daneben und auf dieselbe Höhe; diese Höhe behält es danach bei. Ein Klick auf einen Text springt zum Element, der Pfeil klappt das Overlay zu einer kleinen Leiste ein.
 - In der Lernendenansicht ganz oben links, in etwas größerer Schrift und nicht einklappbar.
+- **Darstellung für Lernende einstellen:** Im Präsentationsmodus zeigt das Overlay in der Lehrendenansicht oben
+  die Leiste „Lernende“. Das Schriftgrößen-Symbol wechselt die Schriftgröße in der Lernendenansicht (S, M, L, XL, XXL),
+  die beiden Pfeil-Symbole machen das Overlay dort schmaler oder breiter (7 Stufen). Die Lehrendenansicht selbst
+  bleibt unverändert, die Einstellung bleibt gespeichert.
 - Ist die Tafel für Lernende eingefroren, bleibt auch das Overlay dort auf dem Stand vom Einfrieren.
 
 Da die Elemente Teil der Tafel sind, werden sie mit der Datei gespeichert und für alle synchronisiert. Öffnest du

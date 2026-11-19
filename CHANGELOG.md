@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.4.0 (in Arbeit)
+
+- Overlay Leitfrage/Fragestellung/Hypothese: neue Leiste „Lernende“ in der Lehrendenansicht
+  - Schriftgröße in der Lernendenansicht umschalten (S, M, L, XL, XXL)
+  - Breite in der Lernendenansicht schmaler/breiter (7 Stufen)
+  - Einstellung wird gespeichert und sofort in der Lernendenansicht übernommen
+- Overlay in der Lehrendenansicht sitzt auf derselben Höhe wie Excalidraws Eigenschaften-Panel
+
 ## 2.3.0
 
 - Neu: Leitfrage, Fragestellung und Hypothese

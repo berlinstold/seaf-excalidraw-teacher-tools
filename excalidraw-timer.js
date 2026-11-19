@@ -3,7 +3,7 @@
 // @namespace    https://github.com/berlinstold/seaf-excalidraw-teacher-tools
 // @homepageURL  https://github.com/berlinstold/seaf-excalidraw-teacher-tools
 // @license      MIT
-// @version      2.3.0
+// @version      2.4.0-dev
 // @description  Timer-Overlay und Präsentationsmodus (Lehrenden-/Lernendenansicht) für Excalidraw-Whiteboards in Seafile
 // @match        https://seafile.example.com/*
 // @grant        none
@@ -1737,6 +1737,33 @@
     ORDER.forEach(function (k) { KINDS[k].prefix = prefixRe(KINDS[k].words); KINDS[k].detect = detectRe(KINDS[k].words); });
     var MARK = 'sfTeacherTools';
     var COLLAPSE_KEY = 'sf-excalidraw-question-collapsed:v1';
+    var TOP_KEY = 'sf-excalidraw-question-top:v1';
+    // Darstellung in der Lernendenansicht; wird in der Lehrendenansicht eingestellt.
+    // Beide Tabs teilen sich localStorage, die Lernendenansicht übernimmt Änderungen sofort (storage-Ereignis).
+    var LERN_KEY = 'sf-excalidraw-question-lern:v1';
+    var LERN_SIZES = [
+      { name: 'S', fs: 'clamp(12px,.9vw,17px)' },
+      { name: 'M', fs: 'clamp(14px,1.05vw,20px)' },
+      { name: 'L', fs: 'clamp(17px,1.35vw,26px)' },
+      { name: 'XL', fs: 'clamp(20px,1.7vw,34px)' },
+      { name: 'XXL', fs: 'clamp(24px,2.1vw,42px)' }
+    ];
+    var LERN_WIDTHS = ['min(20vw,320px)', 'min(25vw,400px)', 'min(30vw,480px)', 'min(36vw,580px)',
+                       'min(42vw,680px)', 'min(50vw,800px)', 'min(60vw,960px)'];
+    var lernView = loadLernView();
+    var learnedTop = jsonGet(localStorage, TOP_KEY);
+
+    function loadLernView() {
+      var v = Object.assign({ size: 1, width: 2 }, jsonGet(localStorage, LERN_KEY) || {});
+      v.size = clamp(Math.round(v.size), 0, LERN_SIZES.length - 1);
+      v.width = clamp(Math.round(v.width), 0, LERN_WIDTHS.length - 1);
+      return v;
+    }
+    function saveLernView() { jsonSet(localStorage, LERN_KEY, lernView); }
+
+    window.addEventListener('storage', function (e) {
+      if (e.key === LERN_KEY) { lernView = loadLernView(); render(); }
+    });
     var LIB_PREFIX = 'sf-teacher-tools-';
     var LIB_IDS = { leitfrage: LIB_PREFIX + 'leitfrage-v4', question: LIB_PREFIX + 'question-v4', hypothesis: LIB_PREFIX + 'hypothesis-v4' };
 
@@ -1926,9 +1953,16 @@
       '.txt{align-self:stretch;font-size:var(--fs);line-height:1.35;overflow-wrap:anywhere;background:var(--tint);border:1.5px solid var(--accent);border-radius:0 8px 8px 8px;padding:6px 9px}',
       '.lehr .item{cursor:pointer}',
       '.lehr .item:hover .txt{text-decoration:underline;text-decoration-color:var(--border)}',
-      '.lehr .card{padding-right:34px}',
-      '.tog{position:absolute;top:4px;right:4px;display:none}',
-      '.lehr .tog{display:inline-flex}',
+      // Bedienleiste (nur Lehrendenansicht): Darstellung für Lernende + Einklappen
+      '.bar{display:none;align-items:center;justify-content:flex-end;gap:2px;margin:-4px -5px -4px 0}',
+      '.lehr .bar{display:flex}',
+      '.ctl{display:none;align-items:center;gap:2px}',
+      '.withctl .ctl{display:inline-flex}',
+      '.ctllbl{font-size:11px;color:var(--muted);margin-right:3px}',
+      '.vsep{width:1px;height:16px;background:var(--border);margin:0 4px}',
+      '.bar .icon{width:24px;height:24px}',
+      '.bar .icon svg{width:15px;height:15px}',
+      '.bar .icon:disabled{opacity:.35;cursor:default;background:transparent}',
       '.pill{display:none;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;border:1px solid var(--border);background:var(--bg);color:var(--fg);',
       '  font:600 12px Assistant,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;box-shadow:0 2px 10px rgba(0,0,0,.1);cursor:pointer}',
       '.pill svg{width:14px;height:14px}',
@@ -1939,11 +1973,20 @@
 
     var ICON_CHEVRON_UP = svgIcon('<path d="M6 15l6-6l6 6"/>');
     var ICON_CHEVRON_DOWN = svgIcon('<path d="M6 9l6 6l6-6"/>');
+    var ICON_NARROWER = svgIcon('<path d="M4 12h6"/><path d="M7 9l3 3l-3 3"/><path d="M20 12h-6"/><path d="M17 9l-3 3l3 3"/>');
+    var ICON_WIDER = svgIcon('<path d="M10 12h-6"/><path d="M7 9l-3 3l3 3"/><path d="M14 12h6"/><path d="M17 9l3 3l-3 3"/>');
 
     var HTML = '' +
       '<div class="wrap vars">' +
       '  <div class="card" role="note" aria-label="Leitfrage, Fragestellung und Hypothese">' +
-      '    <button class="icon tog" data-act="collapse" title="Einklappen">' + ICON_CHEVRON_UP + '</button>' +
+      '    <div class="bar">' +
+      '      <span class="ctl"><span class="ctllbl">Lernende</span>' +
+      '        <button class="icon" data-act="lsize">' + ICON_TEXT_SIZE + '</button>' +
+      '        <button class="icon" data-act="lnarrow">' + ICON_NARROWER + '</button>' +
+      '        <button class="icon" data-act="lwide">' + ICON_WIDER + '</button>' +
+      '        <span class="vsep"></span></span>' +
+      '      <button class="icon" data-act="collapse" title="Einklappen">' + ICON_CHEVRON_UP + '</button>' +
+      '    </div>' +
       '    <div class="item" data-kind="leitfrage" hidden><div class="lbl">Leitfrage</div><div class="txt"></div></div>' +
       '    <div class="item" data-kind="question" hidden><div class="lbl">Fragestellung</div><div class="txt"></div></div>' +
       '    <div class="item" data-kind="hypothesis" hidden><div class="lbl">Hypothese</div><div class="txt"></div></div>' +
@@ -1961,6 +2004,9 @@
         var act = b.getAttribute('data-act');
         if (act === 'collapse') { collapsed = true; jsonSet(localStorage, COLLAPSE_KEY, true); render(); }
         else if (act === 'expand') { collapsed = false; jsonSet(localStorage, COLLAPSE_KEY, false); render(); }
+        else if (act === 'lsize') { lernView.size = (lernView.size + 1) % LERN_SIZES.length; saveLernView(); render(); }
+        else if (act === 'lnarrow') { if (lernView.width > 0) { lernView.width--; saveLernView(); render(); } }
+        else if (act === 'lwide') { if (lernView.width < LERN_WIDTHS.length - 1) { lernView.width++; saveLernView(); render(); } }
         else if (b.classList.contains('item')) jumpTo(b.getAttribute('data-kind'));
       });
     }
@@ -1980,14 +2026,17 @@
     // Excalidraw-Eigenschaftenpanel (links, bei Auswahl) ausweichen
     function leftObstacle(exr) {
       var sels = ['.App-menu__left', '.selected-shape-actions', '.properties-content'];
-      var right = 0;
+      var found = null;
       sels.forEach(function (sel) {
         var el = document.querySelector('.excalidraw ' + sel);
         if (!el) return;
         var r = el.getBoundingClientRect();
-        if (r.width > 0 && r.height > 0 && r.left < exr.left + 120) right = Math.max(right, r.right);
+        if (r.width > 0 && r.height > 0 && r.left < exr.left + 120) {
+          if (!found) found = { right: r.right, top: r.top };
+          else { found.right = Math.max(found.right, r.right); found.top = Math.min(found.top, r.top); }
+        }
       });
-      return right;
+      return found;
     }
 
     function place() {
@@ -1995,10 +2044,18 @@
       var exr = ex ? ex.getBoundingClientRect() : { left: 0, top: 0 };
       var lern = Pres.role() === 'lernende';
       var left = Math.max(0, exr.left) + 12;
-      var top = Math.max(0, exr.top) + (lern && Pres.lernUiHidden() ? 12 : 64);
+      var exTop = Math.max(0, exr.top);
+      var top = exTop + (lern && Pres.lernUiHidden() ? 12 : 64);
       if (!lern) {
+        // Oberkante an Excalidraws Eigenschaften-Panel ausrichten. Dessen Abstand zur Leiste wird gemerkt,
+        // damit das Overlay auch ohne geöffnetes Panel auf derselben Höhe sitzt und nicht springt.
         var obs = leftObstacle(exr);
-        if (obs) left = Math.max(left, obs + 12);
+        if (obs) {
+          left = Math.max(left, obs.right + 12);
+          var off = Math.round(obs.top - exTop);
+          if (off > 0 && off < 400 && off !== learnedTop) { learnedTop = off; jsonSet(localStorage, TOP_KEY, off); }
+        }
+        if (typeof learnedTop === 'number') top = exTop + learnedTop;
       }
       ui.host.style.left = Math.round(left) + 'px';
       ui.host.style.top = Math.round(top) + 'px';
@@ -2016,6 +2073,26 @@
       ui.wrap.classList.toggle('lern', lern);
       ui.wrap.classList.toggle('lehr', !lern);
       ui.wrap.classList.toggle('collapsed', !lern && collapsed);
+      if (lern) {
+        ui.wrap.style.setProperty('--fs', LERN_SIZES[lernView.size].fs);
+        ui.wrap.style.setProperty('--maxw', LERN_WIDTHS[lernView.width]);
+      } else {
+        ui.wrap.style.removeProperty('--fs');
+        ui.wrap.style.removeProperty('--maxw');
+      }
+      var withCtl = !lern && Pres.role() === 'lehrende';
+      ui.wrap.classList.toggle('withctl', withCtl);
+      if (withCtl) {
+        var sz = ui.root.querySelector('[data-act=lsize]');
+        var nb = ui.root.querySelector('[data-act=lnarrow]');
+        var wb = ui.root.querySelector('[data-act=lwide]');
+        sz.title = 'Schriftgröße in der Lernendenansicht: ' + LERN_SIZES[lernView.size].name + ' (klicken zum Wechseln)';
+        var stufe = ' (Stufe ' + (lernView.width + 1) + ' von ' + LERN_WIDTHS.length + ')';
+        nb.title = 'In der Lernendenansicht schmaler' + stufe;
+        wb.title = 'In der Lernendenansicht breiter' + stufe;
+        nb.disabled = lernView.width <= 0;
+        wb.disabled = lernView.width >= LERN_WIDTHS.length - 1;
+      }
       ORDER.forEach(function (k) {
         var item = ui.root.querySelector('.item[data-kind=' + k + ']');
         var on = shown.indexOf(k) >= 0;
