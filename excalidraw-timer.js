@@ -804,7 +804,7 @@
                             jsonGet(sessionStorage, STATE_KEY) || {});
     delete cfg.syncTimer;
     // Einstellungen der Lernendenansicht (pro Tab)
-    var lern = Object.assign({ hideUi: true, badgeHidden: false }, jsonGet(sessionStorage, STATE_KEY + ':lern') || {});
+    var lern = Object.assign({ hideUi: true, badgeHidden: false, hideCursor: true }, jsonGet(sessionStorage, STATE_KEY + ':lern') || {});
 
     var panelOpen = false;
     var panelPos = Object.assign({ x: null, y: null }, jsonGet(localStorage, PRES_POS_KEY) || {});
@@ -926,6 +926,7 @@
       if (old) closeChannel();
       if (old === 'lernende') { setFrozen(false, { fade: false }); applyLernendeUi(false); }
       role = r;
+      applyCursor();
       try { if (r) sessionStorage.setItem(ROLE_KEY, r); else sessionStorage.removeItem(ROLE_KEY); } catch (e) { /* ignorieren */ }
       peers = {}; teacherSeen = 0; gotFirstSync = false; lastView = null;
       Timer.setRemote(r === 'lernende');
@@ -1087,6 +1088,12 @@
       var H = s.height || (ex ? ex.clientHeight : window.innerHeight);
       var z = clamp(Math.min(W / v.w, H / v.h), 0.1, 30);
       appSet(app, { scrollX: W / (2 * z) - v.cx, scrollY: H / (2 * z) - v.cy, zoom: { value: z } });
+    }
+
+    // Zeiger anderer Teilnehmender (und deren Auswahlrahmen) zeichnet Excalidraw auf die "interactive"-Ebene.
+    // Der Laserpointer liegt auf einer eigenen SVG-Ebene und bleibt deshalb sichtbar.
+    function applyCursor() {
+      document.documentElement.classList.toggle('sf-ex-lernende-nocursor', role === 'lernende' && !!lern.hideCursor);
     }
 
     function applyLernendeUi(hide) {
@@ -1270,6 +1277,7 @@
       '  <div class="menu">' +
       '    <button class="btn" data-act="fullscreen"></button>' +
       '    <button class="btn" data-act="ui"></button>' +
+      '    <button class="btn" data-act="cursor"></button>' +
       '    <button class="btn warnbtn" data-act="unfreeze" hidden>Jetzt aufdecken</button>' +
       '    <button class="btn" data-act="hidebadge">Hinweis ausblenden (Alt+Shift+P zeigt ihn wieder)</button>' +
       '    <button class="btn" data-act="leave">Rolle beenden</button>' +
@@ -1292,6 +1300,7 @@
           case 'menu': badge.wrap.classList.toggle('open'); break;
           case 'fullscreen': badge.wrap.classList.remove('open'); toggleFullscreen(); break;
           case 'ui': lern.hideUi = !lern.hideUi; saveLern(); applyLernendeUi(lern.hideUi); break;
+          case 'cursor': lern.hideCursor = !lern.hideCursor; saveLern(); applyCursor(); break;
           case 'unfreeze': setFrozen(false, { fade: true }); break;
           case 'hidebadge': lern.badgeHidden = true; saveLern(); badge.wrap.classList.remove('open'); break;
           case 'leave': badge.wrap.classList.remove('open'); setRole(null); break;
@@ -1324,6 +1333,7 @@
       if (pt.textContent !== t) pt.textContent = t;
       r.querySelector('[data-act=fullscreen]').textContent = document.fullscreenElement ? 'Vollbild beenden' : 'Vollbild (nur Tafel)';
       r.querySelector('[data-act=ui]').textContent = lern.hideUi ? 'Bedienelemente einblenden' : 'Bedienelemente ausblenden';
+      r.querySelector('[data-act=cursor]').textContent = lern.hideCursor ? 'Mauszeiger der Lehrenden einblenden' : 'Mauszeiger der Lehrenden ausblenden';
       // Nur ohne verbundene Lehrendenansicht sinnvoll (sonst friert diese sofort wieder ein)
       r.querySelector('[data-act=unfreeze]').hidden = !frozenLocal || connected;
     }
@@ -1338,7 +1348,9 @@
       st.textContent = [
         '.layer-ui__wrapper', '.layer-ui__wrapper__footer', '.App-bottom-bar', 'footer',
         '.zoom-actions', '.undo-redo-buttons', '.disable-view-mode', '.main-menu-trigger'
-      ].map(function (sel) { return 'html.sf-ex-lernende-ui .excalidraw ' + sel; }).join(',') + '{visibility:hidden!important}';
+      ].map(function (sel) { return 'html.sf-ex-lernende-ui .excalidraw ' + sel; }).join(',') + '{visibility:hidden!important}\n' +
+        'html.sf-ex-lernende-nocursor .excalidraw canvas.excalidraw__canvas.interactive,' +
+        'html.sf-ex-lernende-nocursor .excalidraw canvas.interactive{opacity:0!important}';
       (document.head || document.documentElement).appendChild(st);
     }
 
@@ -1356,6 +1368,7 @@
         injectLernCss();
         var app = getApp();
         if (app && appliedViewMode !== app) applyLernendeUi(lern.hideUi);
+        applyCursor();
         if (app && lastView && !app.__sfViewApplied) { app.__sfViewApplied = true; applyView(lastView); }
       }
       if (role === 'lehrende' && cfg.mirror) startMirrorLoop();

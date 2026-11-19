@@ -204,7 +204,8 @@ verbunden ist.
 - Reine Anzeige: Excalidraw läuft im Ansichtsmodus, die Bedienelemente sind ausgeblendet. Ein versehentlicher
   Klick am Beamer verändert nichts.
 - Unten rechts zeigt ein dezenter Hinweis den Zustand („verbunden“, „eingefroren“, „Lehrendenansicht nicht verbunden“).
-  Ein Klick darauf öffnet ein Menü mit Vollbild, Bedienelementen, Ausblenden des Hinweises und „Rolle beenden“.
+  Ein Klick darauf öffnet ein Menü mit Vollbild, Bedienelementen, Mauszeiger der Lehrenden, Ausblenden des Hinweises
+  und „Rolle beenden“.
 - Wird die Lernendenansicht während des Einfrierens neu geladen, zeigt sie eine leere Fläche („Tafel pausiert“)
   statt des verborgenen Stands.
 - Wird die Lehrendenansicht geschlossen, während die Tafel eingefroren ist, bleibt die Lernendenansicht
@@ -220,8 +221,8 @@ verbunden ist.
 - Fürs **Spiegeln** liest das Plugin die Ansicht direkt aus der internen Excalidraw-Komponente, weil Seafile
   dafür keine offizielle Schnittstelle bietet. Nach einem Seafile-Update mit neuer Excalidraw-Version kann
   das ausfallen. Das Panel zeigt das dann an. Einfrieren und Timer funktionieren unabhängig davon weiter.
-- Ist die Tafel nicht eingefroren, sehen die Lernenden deinen Mauszeiger als Teilnehmer-Cursor, wie bei
-  jeder gemeinsamen Excalidraw-Sitzung.
+- Deinen **Mauszeiger** und deine Auswahlrahmen sehen die Lernenden nicht, nur den **Laserpointer** (Taste `K`).
+  So lenkt der Zeiger nicht ab. Über das Menü der Lernendenansicht lässt sich der Zeiger bei Bedarf einblenden.
 
 ---
 

@@ -7,6 +7,8 @@
   - Breite in der Lernendenansicht schmaler/breiter (7 Stufen)
   - Einstellung wird gespeichert und sofort in der Lernendenansicht übernommen
   - Aktuelle Stufe wird neben den Symbolen angezeigt (z. B. „M“, „3/7“)
+- Lernendenansicht zeigt den Mauszeiger und die Auswahlrahmen der Lehrenden nicht mehr, nur noch den Laserpointer;
+  im Menü der Lernendenansicht wieder einblendbar
 - Overlay in der Lehrendenansicht sitzt auf derselben Höhe wie Excalidraws Eigenschaften-Panel und weicht ihm
   ohne Verzögerung aus (im selben Bildaufbau)
 
