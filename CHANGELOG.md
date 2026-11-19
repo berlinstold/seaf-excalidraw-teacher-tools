@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.3.0 (in Arbeit)
+## 2.3.0
 
 - Neu: Leitfrage, Fragestellung und Hypothese
   - Drei markierte Tafel-Elemente; ihr Text erscheint dauerhaft oben links, auch in der Lernendenansicht
