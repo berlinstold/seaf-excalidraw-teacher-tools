@@ -853,6 +853,7 @@
         prunePeers();
       } else if (role === 'lernende') {
         post({ type: 'status', frozen: frozenLocal });
+        sendMagicPointer();
       }
       renderAll();
     }
@@ -936,6 +937,7 @@
           panelOpen = false;
           applyLernendeUi(lern.hideUi);
           post({ type: 'hello' });
+          sendMagicPointer();
         } else {
           post(fullSync());
           startMirrorLoop();
@@ -1094,6 +1096,84 @@
     // Der Laserpointer liegt auf einer eigenen SVG-Ebene und bleibt deshalb sichtbar.
     function applyCursor() {
       document.documentElement.classList.toggle('sf-ex-lernende-nocursor', role === 'lernende' && !!lern.hideCursor);
+    }
+
+    // --- Zeiger der Lernendenansicht in anderen Ansichten verbergen ---------------------
+    // 1. Die Lernendenansicht leitet (bei ausgeblendeten Bedienelementen) keine Mausereignisse an
+    //    Excalidraw weiter und sendet damit auch keinen Zeiger mehr an die Sitzung.
+    // 2. Zusätzlich meldet sie einen Zeiger an einer eindeutigen Koordinate (MAGIC). Andere Ansichten
+    //    erkennen diesen Zeiger und entfernen ihn, bevor Excalidraw ihn zeichnet (sonst erschiene er
+    //    halbtransparent am Bildschirmrand). Zeiger echter anderer Teilnehmender bleiben unberührt.
+    var MAGIC = -7777777;
+    function isMagic(p) { return !!p && Math.abs(p.x - MAGIC) < 2 && Math.abs(p.y - MAGIC) < 2; }
+
+    function blocksPointer() { return role === 'lernende' && !!lern.hideUi; }
+
+    function onLernPointer(e) {
+      if (!blocksPointer()) return;
+      var t = e.target;
+      if (!t || !t.closest) return;
+      var ex = t.closest('.excalidraw');
+      if (!ex) return;
+      if (t.closest('[id^="sf-ex-"]')) return; // eigene Overlays (z. B. im Vollbild) nicht blockieren
+      e.stopImmediatePropagation();
+    }
+    ['pointermove', 'pointerdown', 'pointerup', 'pointerleave', 'pointerenter', 'mousemove', 'touchmove'].forEach(function (type) {
+      window.addEventListener(type, onLernPointer, true);
+    });
+
+    function sendMagicPointer() {
+      if (!blocksPointer()) return;
+      var app = getApp();
+      var fn = app && app.props && app.props.onPointerUpdate;
+      if (typeof fn !== 'function') return;
+      try { fn({ pointer: { x: MAGIC, y: MAGIC, tool: 'pointer' }, button: 'up', pointersMap: new Map() }); } catch (e) { /* ignorieren */ }
+    }
+
+    function stripMagic(map) {
+      if (!(map instanceof Map)) return map;
+      var changed = false;
+      var out = new Map();
+      map.forEach(function (c, k) {
+        if (c && isMagic(c.pointer)) {
+          changed = true;
+          var cc = Object.assign({}, c);
+          delete cc.pointer;
+          out.set(k, cc);
+        } else {
+          out.set(k, c);
+        }
+      });
+      return changed ? out : map;
+    }
+
+    // In der Lehrendenansicht (und ohne Rolle) Excalidraws setState so ergänzen, dass Zeiger von
+    // Lernendenansichten herausgefiltert werden – synchron, also ohne Aufblitzen.
+    function patchCollaborators(app) {
+      if (!app || app.__sfCollabPatched || typeof app.setState !== 'function') return;
+      var orig = app.setState;
+      app.setState = function (u, cb) {
+        if (u && typeof u === 'object' && u.collaborators instanceof Map) {
+          var m = stripMagic(u.collaborators);
+          if (m !== u.collaborators) u = Object.assign({}, u, { collaborators: m });
+        } else if (typeof u === 'function') {
+          var f = u;
+          u = function (prev, props) {
+            var r = f(prev, props);
+            if (r && r.collaborators instanceof Map) {
+              var m2 = stripMagic(r.collaborators);
+              if (m2 !== r.collaborators) r = Object.assign({}, r, { collaborators: m2 });
+            }
+            return r;
+          };
+        }
+        return orig.call(this, u, cb);
+      };
+      app.__sfCollabPatched = true;
+      if (app.state && app.state.collaborators instanceof Map) {
+        var cur = stripMagic(app.state.collaborators);
+        if (cur !== app.state.collaborators) orig.call(app, { collaborators: cur });
+      }
     }
 
     function applyLernendeUi(hide) {
@@ -1299,7 +1379,7 @@
         switch (b.getAttribute('data-act')) {
           case 'menu': badge.wrap.classList.toggle('open'); break;
           case 'fullscreen': badge.wrap.classList.remove('open'); toggleFullscreen(); break;
-          case 'ui': lern.hideUi = !lern.hideUi; saveLern(); applyLernendeUi(lern.hideUi); break;
+          case 'ui': lern.hideUi = !lern.hideUi; saveLern(); applyLernendeUi(lern.hideUi); sendMagicPointer(); break;
           case 'cursor': lern.hideCursor = !lern.hideCursor; saveLern(); applyCursor(); break;
           case 'unfreeze': setFrozen(false, { fade: true }); break;
           case 'hidebadge': lern.badgeHidden = true; saveLern(); badge.wrap.classList.remove('open'); break;
@@ -1370,6 +1450,9 @@
         if (app && appliedViewMode !== app) applyLernendeUi(lern.hideUi);
         applyCursor();
         if (app && lastView && !app.__sfViewApplied) { app.__sfViewApplied = true; applyView(lastView); }
+        if (app && !app.__sfMagicSent) { app.__sfMagicSent = true; sendMagicPointer(); }
+      } else {
+        patchCollaborators(getApp());
       }
       if (role === 'lehrende' && cfg.mirror) startMirrorLoop();
     }

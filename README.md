@@ -223,6 +223,9 @@ verbunden ist.
   das ausfallen. Das Panel zeigt das dann an. Einfrieren und Timer funktionieren unabhängig davon weiter.
 - Deinen **Mauszeiger** und deine Auswahlrahmen sehen die Lernenden nicht, nur den **Laserpointer** (Taste `K`).
   So lenkt der Zeiger nicht ab. Über das Menü der Lernendenansicht lässt sich der Zeiger bei Bedarf einblenden.
+- Umgekehrt erscheint der Mauszeiger der Lernendenansicht nicht in der Lehrendenansicht. Die Lernendenansicht gibt
+  keine Mausbewegungen an Excalidraw weiter, solange ihre Bedienelemente ausgeblendet sind, und meldet sich mit einem
+  unsichtbaren Erkennungs-Zeiger. Zeiger echter anderer Teilnehmender bleiben sichtbar.
 
 ---
 

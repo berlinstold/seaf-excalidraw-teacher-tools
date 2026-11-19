@@ -9,6 +9,8 @@
   - Aktuelle Stufe wird neben den Symbolen angezeigt (z. B. „M“, „3/7“)
 - Lernendenansicht zeigt den Mauszeiger und die Auswahlrahmen der Lehrenden nicht mehr, nur noch den Laserpointer;
   im Menü der Lernendenansicht wieder einblendbar
+- Lehrendenansicht zeigt den Mauszeiger der Lernendenansicht nicht mehr (Zeiger anderer Teilnehmender bleiben sichtbar);
+  die Lernendenansicht gibt bei ausgeblendeten Bedienelementen keine Mausbewegungen an Excalidraw weiter
 - Overlay in der Lehrendenansicht sitzt auf derselben Höhe wie Excalidraws Eigenschaften-Panel und weicht ihm
   ohne Verzögerung aus (im selben Bildaufbau)
 
