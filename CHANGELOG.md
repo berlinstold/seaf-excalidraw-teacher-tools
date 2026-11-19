@@ -6,7 +6,9 @@
   - Schriftgröße in der Lernendenansicht umschalten (S, M, L, XL, XXL)
   - Breite in der Lernendenansicht schmaler/breiter (7 Stufen)
   - Einstellung wird gespeichert und sofort in der Lernendenansicht übernommen
-- Overlay in der Lehrendenansicht sitzt auf derselben Höhe wie Excalidraws Eigenschaften-Panel
+  - Aktuelle Stufe wird neben den Symbolen angezeigt (z. B. „M“, „3/7“)
+- Overlay in der Lehrendenansicht sitzt auf derselben Höhe wie Excalidraws Eigenschaften-Panel und weicht ihm
+  ohne Verzögerung aus (im selben Bildaufbau)
 
 ## 2.3.0
 

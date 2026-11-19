@@ -1963,6 +1963,10 @@
       '.bar .icon{width:24px;height:24px}',
       '.bar .icon svg{width:15px;height:15px}',
       '.bar .icon:disabled{opacity:.35;cursor:default;background:transparent}',
+      '.bar .icon.wl{width:auto;padding:0 5px 0 4px;gap:3px}',
+      '.lv{font-size:11px;font-weight:700;color:var(--fg);font-variant-numeric:tabular-nums;line-height:1;min-width:22px;text-align:center}',
+      '.bar .icon.wl .lv{min-width:0;text-align:left}',
+      '.vsep.thin{height:12px;margin:0 2px;opacity:.7}',
       '.pill{display:none;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;border:1px solid var(--border);background:var(--bg);color:var(--fg);',
       '  font:600 12px Assistant,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;box-shadow:0 2px 10px rgba(0,0,0,.1);cursor:pointer}',
       '.pill svg{width:14px;height:14px}',
@@ -1981,8 +1985,10 @@
       '  <div class="card" role="note" aria-label="Leitfrage, Fragestellung und Hypothese">' +
       '    <div class="bar">' +
       '      <span class="ctl"><span class="ctllbl">Lernende</span>' +
-      '        <button class="icon" data-act="lsize">' + ICON_TEXT_SIZE + '</button>' +
+      '        <button class="icon wl" data-act="lsize">' + ICON_TEXT_SIZE + '<span class="lv lv-size"></span></button>' +
+      '        <span class="vsep thin"></span>' +
       '        <button class="icon" data-act="lnarrow">' + ICON_NARROWER + '</button>' +
+      '        <span class="lv lv-width"></span>' +
       '        <button class="icon" data-act="lwide">' + ICON_WIDER + '</button>' +
       '        <span class="vsep"></span></span>' +
       '      <button class="icon" data-act="collapse" title="Einklappen">' + ICON_CHEVRON_UP + '</button>' +
@@ -2090,6 +2096,9 @@
         var stufe = ' (Stufe ' + (lernView.width + 1) + ' von ' + LERN_WIDTHS.length + ')';
         nb.title = 'In der Lernendenansicht schmaler' + stufe;
         wb.title = 'In der Lernendenansicht breiter' + stufe;
+        ui.root.querySelector('.lv-size').textContent = LERN_SIZES[lernView.size].name;
+        ui.root.querySelector('.lv-width').textContent = (lernView.width + 1) + '/' + LERN_WIDTHS.length;
+        ui.root.querySelector('.lv-width').title = 'Breite in der Lernendenansicht: Stufe ' + (lernView.width + 1) + ' von ' + LERN_WIDTHS.length;
         nb.disabled = lernView.width <= 0;
         wb.disabled = lernView.width >= LERN_WIDTHS.length - 1;
       }
@@ -2140,6 +2149,9 @@
 
     return {
       init: init, render: render, update: update, onFreeze: onFreeze,
+      // Wird bei jeder DOM-Änderung (im selben Bildaufbau) aufgerufen, damit das Overlay
+      // ohne Verzögerung dem Eigenschaften-Panel von Excalidraw ausweicht
+      reposition: function () { if (ui && ui.host.isConnected && ui.host.style.display !== 'none') place(); },
       libraryItems: libraryItems
     };
   })();
@@ -2386,6 +2398,7 @@
     }
     Buttons.ensure(ex);
     Pres.check();
+    Question.reposition();
   }
 
   var checkPending = false;

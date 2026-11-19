@@ -112,7 +112,8 @@ sind gruppiert und lassen sich gemeinsam verschieben.
 - **Darstellung für Lernende einstellen:** Im Präsentationsmodus zeigt das Overlay in der Lehrendenansicht oben
   die Leiste „Lernende“. Das Schriftgrößen-Symbol wechselt die Schriftgröße in der Lernendenansicht (S, M, L, XL, XXL),
   die beiden Pfeil-Symbole machen das Overlay dort schmaler oder breiter (7 Stufen). Die Lehrendenansicht selbst
-  bleibt unverändert, die Einstellung bleibt gespeichert.
+  bleibt unverändert, die Einstellung bleibt gespeichert. Die aktuelle Stufe steht direkt daneben
+  (z. B. „M“ für die Schriftgröße und „3/7“ für die Breite).
 - Ist die Tafel für Lernende eingefroren, bleibt auch das Overlay dort auf dem Stand vom Einfrieren.
 
 Da die Elemente Teil der Tafel sind, werden sie mit der Datei gespeichert und für alle synchronisiert. Öffnest du
