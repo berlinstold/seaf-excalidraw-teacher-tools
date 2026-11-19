@@ -2,17 +2,17 @@
 
 ## 2.3.0 (in Arbeit)
 
-- Neu: Leitfrage und Hypothese
-  - Markierte Textfelder auf der Tafel; ihr Text erscheint dauerhaft oben links, auch in der Lernendenansicht
-  - Element-Design: farbiger Reiter mit Überschrift über dem Eingabekasten (Leitfrage Mint `#e6fcf5`, Hypothese Violett `#f3f0ff`)
-  - Overlay im gleichen Stil, schmal gehalten, in der Lernendenansicht mit angepasster Schriftgröße
-  - Bezeichnungen über `LABEL_QUESTION` / `LABEL_HYPOTHESIS` im Skript einstellbar; ältere Bibliothekseinträge werden automatisch ersetzt
-  - Overlay nur, wenn ein Element mit Text vorhanden ist und es nicht selbst vollständig sichtbar ist
-  - Elemente werden automatisch in die Excalidraw-Bibliothek gelegt, lassen sich im Präsentationspanel einfügen und
-    liegen als `library/leitfrage-hypothese.excalidrawlib` bei
+- Neu: Leitfrage, Fragestellung und Hypothese
+  - Drei markierte Tafel-Elemente; ihr Text erscheint dauerhaft oben links, auch in der Lernendenansicht
+  - Element-Design: farbiger Reiter mit großer Überschrift über dem Eingabekasten
+    (Leitfrage Blau, Fragestellung Mint `#e6fcf5`, Hypothese Violett)
+  - Overlay im gleichen Stil, schmal gehalten, Reihenfolge Leitfrage, Fragestellung, Hypothese
+  - Overlay nur für Elemente mit Text, die nicht selbst vollständig sichtbar sind
+  - Elemente werden automatisch in die Excalidraw-Bibliothek gelegt (ältere Versionen ersetzt), lassen sich im
+    Präsentationspanel einfügen und liegen als `library/leitfrage-fragestellung-hypothese.excalidrawlib` bei
   - Lehrendenansicht: weicht dem Eigenschaften-Panel aus, einklappbar, Klick springt zum Element
   - Eingefrorene Lernendenansicht zeigt den Stand vom Einfrieren
-- Hinweis der Lernendenansicht sitzt jetzt unten rechts (oben links ist die Leitfrage)
+- Hinweis der Lernendenansicht sitzt jetzt unten rechts (oben links ist das Overlay)
 
 ## 2.2.0
 

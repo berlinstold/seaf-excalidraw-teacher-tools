@@ -12,7 +12,7 @@
 //
 // Seafile Excalidraw Teacher Tools
 // --------------------------------
-// Leitfrage und Hypothese:
+// Leitfrage, Fragestellung und Hypothese:
 //   - Bibliothekselemente bzw. Panel-Buttons fügen markierte Textfelder in die Tafel ein;
 //     ihr Text erscheint dauerhaft oben links (auch in der Lernendenansicht), außer das
 //     Element ist selbst vollständig sichtbar.
@@ -62,11 +62,6 @@
   var LESSON_WARN_MINUTES = 5;      // ab dieser Restzeit wird die Anzeige farbig
   var LESSON_AUTOHIDE_MINUTES = 30; // so lange nach Stundenende verschwindet die Anzeige von selbst
   var LESSON_BTN_ID = 'sf-ex-lesson-btn';
-
-  // Leitfrage/Hypothese: Bezeichnungen der beiden Tafel-Elemente (z. B. 'Fragestellung' statt 'Leitfrage').
-  // Bereits auf Tafeln liegende Elemente werden weiterhin erkannt, auch nach einer Änderung.
-  var LABEL_QUESTION = 'Leitfrage';
-  var LABEL_HYPOTHESIS = 'Hypothese';
 
   var TOOLBAR_SELECTORS = [
     '.App-toolbar-content',
@@ -1145,7 +1140,8 @@
       '.keys{font-size:11px;color:var(--muted)}',
       '.warn{font-size:11px;color:var(--warn);margin:2px 2px 6px}',
       '.elbtns{display:flex;gap:6px;margin:2px 0 6px}',
-      '.elbtns .btn{flex:1;padding:0 6px;font-size:12px}',
+      '.elbtns .btn{flex:1;padding:0 4px;font-size:12px}',
+      '.ellbl{font-size:11px;color:var(--muted);margin:2px 2px 4px}',
       '[hidden]{display:none!important}'
     ].join('\n');
 
@@ -1187,7 +1183,8 @@
       '  <div class="section" data-view="elements">' +
       '    <div class="sep"></div>' +
       '    <div class="row"><span class="lbl">Tafel-Elemente<span class="sub">Text bleibt oben links dauerhaft sichtbar</span></span></div>' +
-      '    <div class="elbtns"><button class="btn" data-act="insq">' + LABEL_QUESTION + ' einfügen</button><button class="btn" data-act="insh">' + LABEL_HYPOTHESIS + ' einfügen</button></div>' +
+      '    <div class="ellbl">Einfügen:</div>' +
+      '    <div class="elbtns"><button class="btn" data-act="insl">Leitfrage</button><button class="btn" data-act="insq">Fragestellung</button><button class="btn" data-act="insh">Hypothese</button></div>' +
       '    <button class="link" data-act="addlib">Zur Excalidraw-Bibliothek hinzufügen</button>' +
       '  </div>' +
       '</div>';
@@ -1221,6 +1218,7 @@
         case 'sendview': lastSent.key = ''; sendView(true); break;
         case 'fade': cfg.fade = !cfg.fade; saveCfg(); renderAll(); break;
         case 'synctimer': setLernTimer(!cfg.lernTimer); break;
+        case 'insl': Question.insert('leitfrage'); break;
         case 'insq': Question.insert('question'); break;
         case 'insh': Question.insert('hypothesis'); break;
         case 'addlib': Question.addToLibrary(true); break;
@@ -1325,7 +1323,7 @@
       if (!show) { if (badge) badge.host.style.display = 'none'; return; }
       ensureBadge();
       badge.host.style.display = '';
-      // unten rechts auf der Tafelfläche (oben links sitzt die Leitfrage);
+      // unten rechts auf der Tafelfläche (oben links sitzen Leitfrage/Fragestellung/Hypothese);
       // bei eingeblendeten Bedienelementen oberhalb der Excalidraw-Fußleiste
       var exr = getExcalidraw() ? getExcalidraw().getBoundingClientRect()
         : { right: window.innerWidth, bottom: window.innerHeight };
@@ -1730,6 +1728,7 @@
   // FRAGESTELLUNG UND HYPOTHESE
   // Quelle sind normale Excalidraw-Elemente (Rahmen mit Text) auf der Tafel,
   // erkennbar an customData.sfTeacherTools oder am Textanfang "Leitfrage:" / "Fragestellung:" / "Hypothese:".
+  // Drei eigenständige Elemente; das Overlay zeigt sie in der Reihenfolge Leitfrage, Fragestellung, Hypothese.
   // Das Overlay zeigt ihren Text dauerhaft in der Ecke, solange das Element nicht
   // selbst vollständig auf dem Bildschirm zu sehen ist.
   // ===========================================================================
@@ -1746,18 +1745,19 @@
       return words.map(function (w) { return String(w).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }).join('|');
     }
     var KINDS = {
-      // Leitfrage: Mint (#e6fcf5) mit Petrol-Rahmen; Hypothese: zartes Violett als Kontrast
-      question: { label: LABEL_QUESTION, words: [LABEL_QUESTION, 'Leitfrage', 'Fragestellung'], stroke: '#099268', bg: '#e6fcf5' },
-      hypothesis: { label: LABEL_HYPOTHESIS, words: [LABEL_HYPOTHESIS, 'Hypothese'], stroke: '#7048e8', bg: '#f3f0ff' }
+      // Leitfrage: Blau; Fragestellung: Mint (#e6fcf5) mit Petrol; Hypothese: zartes Violett
+      leitfrage: { label: 'Leitfrage', words: ['Leitfrage'], stroke: '#1971c2', bg: '#e7f5ff' },
+      question: { label: 'Fragestellung', words: ['Fragestellung'], stroke: '#099268', bg: '#e6fcf5' },
+      hypothesis: { label: 'Hypothese', words: ['Hypothese'], stroke: '#7048e8', bg: '#f3f0ff' }
     };
-    var ORDER = ['question', 'hypothesis'];
+    var ORDER = ['leitfrage', 'question', 'hypothesis'];
     ORDER.forEach(function (k) { KINDS[k].prefix = prefixRe(KINDS[k].words); KINDS[k].detect = detectRe(KINDS[k].words); });
     var MARK = 'sfTeacherTools';
     var COLLAPSE_KEY = 'sf-excalidraw-question-collapsed:v1';
     var LIB_PREFIX = 'sf-teacher-tools-';
-    var LIB_IDS = { question: LIB_PREFIX + 'question-v3', hypothesis: LIB_PREFIX + 'hypothesis-v3' };
-    // Ändert sich Design oder Bezeichnung, kommen die Einträge einmal neu in die Bibliothek
-    var LIB_FLAG_KEY = 'sf-excalidraw-question-lib:v3:' + LABEL_QUESTION + '|' + LABEL_HYPOTHESIS;
+    var LIB_IDS = { leitfrage: LIB_PREFIX + 'leitfrage-v4', question: LIB_PREFIX + 'question-v4', hypothesis: LIB_PREFIX + 'hypothesis-v4' };
+    // Ändert sich das Design, kommen die Einträge einmal neu in die Bibliothek (ältere werden ersetzt)
+    var LIB_FLAG_KEY = 'sf-excalidraw-question-lib:v4';
 
     var ui = null;
     var poll = null;
@@ -1845,7 +1845,7 @@
     // Aufbau: farbiger Reiter mit der Überschrift, darunter der Kasten zum Eintippen.
     // Beide liegen in einer Gruppe und bewegen sich gemeinsam.
     //   ┌───────────────┐
-    //   │  Leitfrage    │
+    //   │ Fragestellung │
     //   ├───────────────┴──────────────────────────┐
     //   │                    …                     │
     //   └──────────────────────────────────────────┘
@@ -1960,11 +1960,13 @@
       '.vars.lern{--maxw:min(30vw,480px);--fs:clamp(14px,1.05vw,20px)}',
       // Gestaltung wie auf der Tafel: farbiger Reiter mit Überschrift über einem getönten Kasten
       '.item{display:flex;flex-direction:column;align-items:flex-start}',
+      '.item[data-kind=leitfrage]{--accent:#1971c2;--tint:#e7f5ff}',
       '.item[data-kind=question]{--accent:#099268;--tint:#e6fcf5}',
       '.item[data-kind=hypothesis]{--accent:#7048e8;--tint:#f3f0ff}',
+      '.dark .item[data-kind=leitfrage]{--accent:#4dabf7;--tint:rgba(77,171,247,.14)}',
       '.dark .item[data-kind=question]{--accent:#20c997;--tint:rgba(32,201,151,.14)}',
       '.dark .item[data-kind=hypothesis]{--accent:#9775fa;--tint:rgba(151,117,250,.16)}',
-      '.lbl{font-size:calc(var(--fs) * .9);font-weight:700;color:#fff;background:var(--accent);line-height:1.2;padding:3px 9px;border-radius:6px 6px 0 0}',
+      '.lbl{font-size:calc(var(--fs) * .78);font-weight:700;color:#fff;background:var(--accent);line-height:1.2;padding:3px 9px;border-radius:6px 6px 0 0}',
       '.dark .lbl{color:#121212}',
       '.txt{align-self:stretch;font-size:var(--fs);line-height:1.35;overflow-wrap:anywhere;background:var(--tint);border:1.5px solid var(--accent);border-radius:0 8px 8px 8px;padding:6px 9px}',
       '.lehr .item{cursor:pointer}',
@@ -1985,10 +1987,11 @@
 
     var HTML = '' +
       '<div class="wrap vars">' +
-      '  <div class="card" role="note" aria-label="' + LABEL_QUESTION + ' und ' + LABEL_HYPOTHESIS + '">' +
+      '  <div class="card" role="note" aria-label="Leitfrage, Fragestellung und Hypothese">' +
       '    <button class="icon tog" data-act="collapse" title="Einklappen">' + ICON_CHEVRON_UP + '</button>' +
-      '    <div class="item" data-kind="question" hidden><div class="lbl">' + LABEL_QUESTION + '</div><div class="txt"></div></div>' +
-      '    <div class="item" data-kind="hypothesis" hidden><div class="lbl">' + LABEL_HYPOTHESIS + '</div><div class="txt"></div></div>' +
+      '    <div class="item" data-kind="leitfrage" hidden><div class="lbl">Leitfrage</div><div class="txt"></div></div>' +
+      '    <div class="item" data-kind="question" hidden><div class="lbl">Fragestellung</div><div class="txt"></div></div>' +
+      '    <div class="item" data-kind="hypothesis" hidden><div class="lbl">Hypothese</div><div class="txt"></div></div>' +
       '  </div>' +
       '  <button class="pill" data-act="expand" title="Ausklappen"><span class="ptext"></span>' + ICON_CHEVRON_DOWN + '</button>' +
       '</div>';

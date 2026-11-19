@@ -117,7 +117,7 @@ jobs:
           gh release create "v$VERSION" \
             dist/seaf-excalidraw-teacher-tools.zip \
             dist/excalidraw-timer.js \
-            library/leitfrage-hypothese.excalidrawlib \
+            library/leitfrage-fragestellung-hypothese.excalidrawlib \
             --target "$GITHUB_SHA" \
             --title "v$VERSION" \
             --notes-file notes.md \

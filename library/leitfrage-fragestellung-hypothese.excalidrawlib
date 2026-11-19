@@ -4,9 +4,9 @@
   "source": "https://github.com/berlinstold/seaf-excalidraw-teacher-tools",
   "libraryItems": [
     {
-      "id": "sf-teacher-tools-question-v3",
+      "id": "sf-teacher-tools-leitfrage-v4",
       "status": "unpublished",
-      "created": 1763510000000,
+      "created": 1763520000000,
       "name": "Leitfrage",
       "elements": [
         {
@@ -16,15 +16,183 @@
           "roughness": 1,
           "opacity": 100,
           "groupIds": [
-            "29326ml64lg2tjf8cz2k"
+            "k00s4n46l67paax1ejoo"
           ],
           "frameId": null,
           "version": 1,
           "isDeleted": false,
-          "updated": 1763510000000,
+          "updated": 1763520000000,
           "link": null,
           "locked": false,
-          "id": "d4yz0emrvftva0hipgad",
+          "id": "sx26yu5yrbfk5a5e97ou",
+          "type": "rectangle",
+          "x": 0,
+          "y": 45,
+          "width": 520,
+          "height": 92,
+          "strokeColor": "#1971c2",
+          "backgroundColor": "#e7f5ff",
+          "fillStyle": "solid",
+          "roundness": {
+            "type": 3
+          },
+          "seed": 1970925705,
+          "versionNonce": 2124096763,
+          "boundElements": [
+            {
+              "type": "text",
+              "id": "9hlkwvwtpgkel1xkc7p0"
+            }
+          ],
+          "customData": {
+            "sfTeacherTools": "leitfrage"
+          }
+        },
+        {
+          "angle": 0,
+          "strokeWidth": 2,
+          "strokeStyle": "solid",
+          "roughness": 1,
+          "opacity": 100,
+          "groupIds": [
+            "k00s4n46l67paax1ejoo"
+          ],
+          "frameId": null,
+          "version": 1,
+          "isDeleted": false,
+          "updated": 1763520000000,
+          "link": null,
+          "locked": false,
+          "id": "9hlkwvwtpgkel1xkc7p0",
+          "type": "text",
+          "x": 252,
+          "y": 78,
+          "width": 16,
+          "height": 25,
+          "strokeColor": "#1e1e1e",
+          "backgroundColor": "transparent",
+          "fillStyle": "solid",
+          "roundness": null,
+          "seed": 350224959,
+          "versionNonce": 2064654700,
+          "boundElements": null,
+          "text": "…",
+          "originalText": "…",
+          "fontSize": 20,
+          "fontFamily": 1,
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "containerId": "sx26yu5yrbfk5a5e97ou",
+          "lineHeight": 1.25,
+          "autoResize": true,
+          "customData": {
+            "sfTeacherTools": "leitfrage"
+          }
+        },
+        {
+          "angle": 0,
+          "strokeWidth": 2,
+          "strokeStyle": "solid",
+          "roughness": 1,
+          "opacity": 100,
+          "groupIds": [
+            "k00s4n46l67paax1ejoo"
+          ],
+          "frameId": null,
+          "version": 1,
+          "isDeleted": false,
+          "updated": 1763520000000,
+          "link": null,
+          "locked": false,
+          "id": "c102cv85hxbjfhb3k9vz",
+          "type": "rectangle",
+          "x": 0,
+          "y": 0,
+          "width": 170,
+          "height": 46,
+          "strokeColor": "#1971c2",
+          "backgroundColor": "#1971c2",
+          "fillStyle": "solid",
+          "roundness": {
+            "type": 3
+          },
+          "seed": 1593133888,
+          "versionNonce": 1268129465,
+          "boundElements": [
+            {
+              "type": "text",
+              "id": "5jlc4pemneh949ymvj80"
+            }
+          ],
+          "customData": {
+            "sfTeacherTools": "leitfrage-label"
+          }
+        },
+        {
+          "angle": 0,
+          "strokeWidth": 2,
+          "strokeStyle": "solid",
+          "roughness": 1,
+          "opacity": 100,
+          "groupIds": [
+            "k00s4n46l67paax1ejoo"
+          ],
+          "frameId": null,
+          "version": 1,
+          "isDeleted": false,
+          "updated": 1763520000000,
+          "link": null,
+          "locked": false,
+          "id": "5jlc4pemneh949ymvj80",
+          "type": "text",
+          "x": 26,
+          "y": 8,
+          "width": 119,
+          "height": 30,
+          "strokeColor": "#ffffff",
+          "backgroundColor": "transparent",
+          "fillStyle": "solid",
+          "roundness": null,
+          "seed": 30629058,
+          "versionNonce": 1896592393,
+          "boundElements": null,
+          "text": "Leitfrage",
+          "originalText": "Leitfrage",
+          "fontSize": 24,
+          "fontFamily": 1,
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "containerId": "c102cv85hxbjfhb3k9vz",
+          "lineHeight": 1.25,
+          "autoResize": true,
+          "customData": {
+            "sfTeacherTools": "leitfrage-label"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sf-teacher-tools-question-v4",
+      "status": "unpublished",
+      "created": 1763520000000,
+      "name": "Fragestellung",
+      "elements": [
+        {
+          "angle": 0,
+          "strokeWidth": 2,
+          "strokeStyle": "solid",
+          "roughness": 1,
+          "opacity": 100,
+          "groupIds": [
+            "w56yppk9e204dsdqsc0p"
+          ],
+          "frameId": null,
+          "version": 1,
+          "isDeleted": false,
+          "updated": 1763520000000,
+          "link": null,
+          "locked": false,
+          "id": "glb2jehsit8uz5okllym",
           "type": "rectangle",
           "x": 0,
           "y": 45,
@@ -36,12 +204,12 @@
           "roundness": {
             "type": 3
           },
-          "seed": 402239492,
-          "versionNonce": 846698336,
+          "seed": 1724587260,
+          "versionNonce": 1179682206,
           "boundElements": [
             {
               "type": "text",
-              "id": "35l9m26mi0yhz0nartbn"
+              "id": "9c6day3ezloqucpyjts6"
             }
           ],
           "customData": {
@@ -55,15 +223,15 @@
           "roughness": 1,
           "opacity": 100,
           "groupIds": [
-            "29326ml64lg2tjf8cz2k"
+            "w56yppk9e204dsdqsc0p"
           ],
           "frameId": null,
           "version": 1,
           "isDeleted": false,
-          "updated": 1763510000000,
+          "updated": 1763520000000,
           "link": null,
           "locked": false,
-          "id": "35l9m26mi0yhz0nartbn",
+          "id": "9c6day3ezloqucpyjts6",
           "type": "text",
           "x": 252,
           "y": 78,
@@ -73,8 +241,8 @@
           "backgroundColor": "transparent",
           "fillStyle": "solid",
           "roundness": null,
-          "seed": 2138540917,
-          "versionNonce": 1834760427,
+          "seed": 1052394212,
+          "versionNonce": 2036280577,
           "boundElements": null,
           "text": "…",
           "originalText": "…",
@@ -82,7 +250,7 @@
           "fontFamily": 1,
           "textAlign": "center",
           "verticalAlign": "middle",
-          "containerId": "d4yz0emrvftva0hipgad",
+          "containerId": "glb2jehsit8uz5okllym",
           "lineHeight": 1.25,
           "autoResize": true,
           "customData": {
@@ -96,19 +264,19 @@
           "roughness": 1,
           "opacity": 100,
           "groupIds": [
-            "29326ml64lg2tjf8cz2k"
+            "w56yppk9e204dsdqsc0p"
           ],
           "frameId": null,
           "version": 1,
           "isDeleted": false,
-          "updated": 1763510000000,
+          "updated": 1763520000000,
           "link": null,
           "locked": false,
-          "id": "a7edcmpb3u2m7os5af3r",
+          "id": "kzevjj4dqi74bnxjx154",
           "type": "rectangle",
           "x": 0,
           "y": 0,
-          "width": 170,
+          "width": 227,
           "height": 46,
           "strokeColor": "#099268",
           "backgroundColor": "#099268",
@@ -116,12 +284,12 @@
           "roundness": {
             "type": 3
           },
-          "seed": 1292824872,
-          "versionNonce": 1378331574,
+          "seed": 1230475208,
+          "versionNonce": 211663304,
           "boundElements": [
             {
               "type": "text",
-              "id": "09fquo6sbegzgsyebann"
+              "id": "ti8riayibqup0qziijgz"
             }
           ],
           "customData": {
@@ -135,34 +303,34 @@
           "roughness": 1,
           "opacity": 100,
           "groupIds": [
-            "29326ml64lg2tjf8cz2k"
+            "w56yppk9e204dsdqsc0p"
           ],
           "frameId": null,
           "version": 1,
           "isDeleted": false,
-          "updated": 1763510000000,
+          "updated": 1763520000000,
           "link": null,
           "locked": false,
-          "id": "09fquo6sbegzgsyebann",
+          "id": "ti8riayibqup0qziijgz",
           "type": "text",
-          "x": 26,
+          "x": 28,
           "y": 8,
-          "width": 119,
+          "width": 172,
           "height": 30,
           "strokeColor": "#ffffff",
           "backgroundColor": "transparent",
           "fillStyle": "solid",
           "roundness": null,
-          "seed": 1239011821,
-          "versionNonce": 215462959,
+          "seed": 1171276698,
+          "versionNonce": 1291023232,
           "boundElements": null,
-          "text": "Leitfrage",
-          "originalText": "Leitfrage",
+          "text": "Fragestellung",
+          "originalText": "Fragestellung",
           "fontSize": 24,
           "fontFamily": 1,
           "textAlign": "center",
           "verticalAlign": "middle",
-          "containerId": "a7edcmpb3u2m7os5af3r",
+          "containerId": "kzevjj4dqi74bnxjx154",
           "lineHeight": 1.25,
           "autoResize": true,
           "customData": {
@@ -172,9 +340,9 @@
       ]
     },
     {
-      "id": "sf-teacher-tools-hypothesis-v3",
+      "id": "sf-teacher-tools-hypothesis-v4",
       "status": "unpublished",
-      "created": 1763510000000,
+      "created": 1763520000000,
       "name": "Hypothese",
       "elements": [
         {
@@ -184,15 +352,15 @@
           "roughness": 1,
           "opacity": 100,
           "groupIds": [
-            "cjn2qavsyeefnpaxx3i4"
+            "d6u7ts79meumweu0gee2"
           ],
           "frameId": null,
           "version": 1,
           "isDeleted": false,
-          "updated": 1763510000000,
+          "updated": 1763520000000,
           "link": null,
           "locked": false,
-          "id": "r02pdclsx7ifxi2v7icb",
+          "id": "7akumtzjf9lf7ty3gk1n",
           "type": "rectangle",
           "x": 0,
           "y": 45,
@@ -204,12 +372,12 @@
           "roundness": {
             "type": 3
           },
-          "seed": 182378959,
-          "versionNonce": 1471339731,
+          "seed": 989385474,
+          "versionNonce": 1325195763,
           "boundElements": [
             {
               "type": "text",
-              "id": "4wtcbe4etuiee28xcivw"
+              "id": "vxmqfbu6qj6mprykz3z1"
             }
           ],
           "customData": {
@@ -223,15 +391,15 @@
           "roughness": 1,
           "opacity": 100,
           "groupIds": [
-            "cjn2qavsyeefnpaxx3i4"
+            "d6u7ts79meumweu0gee2"
           ],
           "frameId": null,
           "version": 1,
           "isDeleted": false,
-          "updated": 1763510000000,
+          "updated": 1763520000000,
           "link": null,
           "locked": false,
-          "id": "4wtcbe4etuiee28xcivw",
+          "id": "vxmqfbu6qj6mprykz3z1",
           "type": "text",
           "x": 252,
           "y": 78,
@@ -241,8 +409,8 @@
           "backgroundColor": "transparent",
           "fillStyle": "solid",
           "roundness": null,
-          "seed": 1016357713,
-          "versionNonce": 1934530462,
+          "seed": 1429697089,
+          "versionNonce": 602642818,
           "boundElements": null,
           "text": "…",
           "originalText": "…",
@@ -250,7 +418,7 @@
           "fontFamily": 1,
           "textAlign": "center",
           "verticalAlign": "middle",
-          "containerId": "r02pdclsx7ifxi2v7icb",
+          "containerId": "7akumtzjf9lf7ty3gk1n",
           "lineHeight": 1.25,
           "autoResize": true,
           "customData": {
@@ -264,15 +432,15 @@
           "roughness": 1,
           "opacity": 100,
           "groupIds": [
-            "cjn2qavsyeefnpaxx3i4"
+            "d6u7ts79meumweu0gee2"
           ],
           "frameId": null,
           "version": 1,
           "isDeleted": false,
-          "updated": 1763510000000,
+          "updated": 1763520000000,
           "link": null,
           "locked": false,
-          "id": "iyljtopmk9my4f0dggc6",
+          "id": "6b2476yzeobd1cprz13p",
           "type": "rectangle",
           "x": 0,
           "y": 0,
@@ -284,12 +452,12 @@
           "roundness": {
             "type": 3
           },
-          "seed": 166793565,
-          "versionNonce": 1870675710,
+          "seed": 1437935485,
+          "versionNonce": 374406640,
           "boundElements": [
             {
               "type": "text",
-              "id": "qpzq05s7leio49ernnbe"
+              "id": "zyu5ofc4l5xn2qp45yty"
             }
           ],
           "customData": {
@@ -303,15 +471,15 @@
           "roughness": 1,
           "opacity": 100,
           "groupIds": [
-            "cjn2qavsyeefnpaxx3i4"
+            "d6u7ts79meumweu0gee2"
           ],
           "frameId": null,
           "version": 1,
           "isDeleted": false,
-          "updated": 1763510000000,
+          "updated": 1763520000000,
           "link": null,
           "locked": false,
-          "id": "qpzq05s7leio49ernnbe",
+          "id": "zyu5ofc4l5xn2qp45yty",
           "type": "text",
           "x": 26,
           "y": 8,
@@ -321,8 +489,8 @@
           "backgroundColor": "transparent",
           "fillStyle": "solid",
           "roundness": null,
-          "seed": 1841028242,
-          "versionNonce": 895829542,
+          "seed": 1433806594,
+          "versionNonce": 825996055,
           "boundElements": null,
           "text": "Hypothese",
           "originalText": "Hypothese",
@@ -330,7 +498,7 @@
           "fontFamily": 1,
           "textAlign": "center",
           "verticalAlign": "middle",
-          "containerId": "iyljtopmk9my4f0dggc6",
+          "containerId": "6b2476yzeobd1cprz13p",
           "lineHeight": 1.25,
           "autoResize": true,
           "customData": {
